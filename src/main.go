@@ -34,5 +34,8 @@ func doCommand(message twitch.PrivateMessage) {
 	switch identifier {
 	case "echo":
 		EchoCommand(message, client)
+	case "id":
+		UserIdCommand(message, client)
 	}
+
 }
