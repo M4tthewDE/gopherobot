@@ -24,7 +24,7 @@ func main() {
 func onMessage(message twitch.PrivateMessage) {
 	prefix := message.Message[0:1]
 
-	if prefix == ";" {
+	if prefix == ";" && message.User.ID == "116672490" {
 		doCommand(message)
 	}
 }
