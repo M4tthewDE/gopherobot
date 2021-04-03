@@ -1,0 +1,31 @@
+name: Go
+
+on:
+  push:
+    branches:
+  pull_request:
+    branches:
+  workflow_dispatch:
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.16
+    - name: Download Modules
+      run: go get
+      working-directory: src
+
+    - name: Build
+      working-directory: src
+      run: go build -v
+
+    - name: Test
+      working-directory: src
+      run: go test -v
