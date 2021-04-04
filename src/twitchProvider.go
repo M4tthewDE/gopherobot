@@ -54,6 +54,41 @@ func GetUserID(user string) (int, error) {
 	}
 	return id, nil
 }
+func GetActiveSubscriptions() (ActiveSubscriptions, error) {
+	url := "https://api.twitch.tv/helix/eventsub/subscriptions"
+
+	client := &http.Client{}
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	req.Header.Add("Client-ID", os.Getenv("TWITCH_APP_ID"))
+	req.Header.Add("Authorization", "Bearer "+os.Getenv("TWITCH_APP_TOKEN"))
+
+	r, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer r.Body.Close()
+
+	data, err := io.ReadAll(r.Body)
+	if err != nil {
+		return ActiveSubscriptions{}, err
+	}
+	var activeSubs ActiveSubscriptions
+	err = json.Unmarshal(data, &activeSubs)
+	if err != nil {
+		return ActiveSubscriptions{}, err
+	}
+
+	if r.StatusCode != 200 {
+		return ActiveSubscriptions{}, errors.New(strconv.Itoa(r.StatusCode))
+	}
+
+	return activeSubs, nil
+}
 
 type GetUserIdJson struct {
 	Data []struct {
@@ -68,4 +103,28 @@ type GetUserIdJson struct {
 		ViewCount       int       `json:"view_count"`
 		CreatedAt       time.Time `json:"created_at"`
 	} `json:"data"`
+}
+
+type ActiveSubscriptions struct {
+	Total int `json:"total"`
+	Data  []struct {
+		ID        string `json:"id"`
+		Status    string `json:"status"`
+		Type      string `json:"type"`
+		Version   string `json:"version"`
+		Condition struct {
+			BroadcasterUserID string `json:"broadcaster_user_id"`
+		} `json:"condition"`
+		CreatedAt time.Time `json:"created_at"`
+		Transport struct {
+			Method   string `json:"method"`
+			Callback string `json:"callback"`
+		} `json:"transport"`
+		Cost int `json:"cost"`
+	} `json:"data"`
+	Limit        int `json:"limit"`
+	MaxTotalCost int `json:"max_total_cost"`
+	TotalCost    int `json:"total_cost"`
+	Pagination   struct {
+	} `json:"pagination"`
 }

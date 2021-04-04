@@ -20,3 +20,31 @@ func UserIdCommand(message twitch.PrivateMessage, client *twitch.Client) {
 		client.Say(message.Channel, "User-ID of "+args[0]+" is "+strconv.Itoa(id))
 	}
 }
+
+func AddFollowAlertCommand(message twitch.PrivateMessage, client *twitch.Client) {
+	args := strings.Split(message.Message[16:], " ")
+
+	id, err := GetUserID(args[0])
+	if err != nil {
+		client.Say(message.Channel, `Couldn't find User-ID for "`+args[0]+`"`)
+	} else {
+		err = RegisterWebhook(id)
+		if err != nil {
+			client.Say(message.Channel, "Error adding follow alert!")
+		}
+	}
+}
+
+func RemoveFollowAlertCommand(message twitch.PrivateMessage, client *twitch.Client) {
+	args := strings.Split(message.Message[19:], " ")
+
+	id, err := GetUserID(args[0])
+	if err != nil {
+		client.Say(message.Channel, `Couldn't find User-ID for "`+args[0]+`"`)
+	} else {
+		err = RemoveWebhook(id)
+		if err != nil {
+			client.Say(message.Channel, "Error removing follow alert!")
+		}
+	}
+}
