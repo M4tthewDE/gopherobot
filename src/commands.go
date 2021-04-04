@@ -39,6 +39,6 @@ func RemoveFollowAlertCommand(message twitch.PrivateMessage, client *twitch.Clie
 	if err != nil {
 		client.Say(message.Channel, `Couldn't find User-ID for "`+args[0]+`"`)
 	} else {
-		DeleteWebhook(id)
+		RemoveWebhook(id)
 	}
 }
