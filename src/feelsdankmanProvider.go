@@ -44,6 +44,7 @@ func RemoveWebhook(id int) error {
 			if err != nil {
 				log.Println(err)
 			}
+			return nil
 		}
 	}
 	return errors.New("No webhook for this user found!")
