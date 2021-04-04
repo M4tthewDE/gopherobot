@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gempir/go-twitch-irc/v2"
+	"log"
 	"net"
 	"net/rpc"
 	"os"
@@ -47,22 +48,23 @@ func doCommand(message twitch.PrivateMessage) {
 	}
 }
 
-func remoteMessageHandler(client *twitch.Client) error {
+func remoteMessageHandler(client *twitch.Client) {
 	addy, err := net.ResolveTCPAddr("tcp", "0.0.0.0:42586")
 	if err != nil {
-		return err
+		log.Println(err)
 	}
 
 	inbound, err := net.ListenTCP("tcp", addy)
 	if err != nil {
-		return err
+		log.Println(err)
 	}
 
 	messageHandler := new(MessageHandler)
-	rpc.Register(messageHandler)
+	err = rpc.Register(messageHandler)
+	if err != nil {
+		log.Println(err)
+	}
 	rpc.Accept(inbound)
-
-	return nil
 }
 
 type MessageHandler int
