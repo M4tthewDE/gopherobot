@@ -4,6 +4,7 @@ import (
 	"github.com/gempir/go-twitch-irc/v2"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func EchoCommand(message twitch.PrivateMessage, client *twitch.Client) {
@@ -49,4 +50,9 @@ func RemoveFollowAlertCommand(message twitch.PrivateMessage, client *twitch.Clie
 		}
 		client.Say(message.Channel, "Removed follow alert for "+args[0]+"!")
 	}
+}
+
+func PingCommand(message twitch.PrivateMessage, client *twitch.Client, startTime time.Time) {
+	payload := "Pong! Uptime: " + time.Since(startTime).String() + "!"
+	client.Say(message.Channel, payload)
 }

@@ -7,11 +7,14 @@ import (
 	"net/rpc"
 	"os"
 	"strings"
+	"time"
 )
 
 var client *twitch.Client
+var startTime time.Time
 
 func main() {
+	startTime = time.Now()
 	client = twitch.NewClient("gopherobot", "oauth:"+os.Getenv("TWITCH_TOKEN"))
 
 	client.OnPrivateMessage(onMessage)
@@ -45,6 +48,8 @@ func doCommand(message twitch.PrivateMessage) {
 		AddFollowAlertCommand(message, client)
 	case "removefollowalert":
 		RemoveFollowAlertCommand(message, client)
+	case "ping":
+		PingCommand(message, client, startTime)
 	}
 }
 
