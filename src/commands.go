@@ -32,6 +32,7 @@ func AddFollowAlertCommand(message twitch.PrivateMessage, client *twitch.Client)
 		if err != nil {
 			client.Say(message.Channel, "Error adding follow alert!")
 		}
+		client.Say(message.Channel, "Added follow alert for "+args[0]+"!")
 	}
 }
 
@@ -46,5 +47,6 @@ func RemoveFollowAlertCommand(message twitch.PrivateMessage, client *twitch.Clie
 		if err != nil {
 			client.Say(message.Channel, "Error removing follow alert!")
 		}
+		client.Say(message.Channel, "Removed follow alert for "+args[0]+"!")
 	}
 }
