@@ -8,8 +8,8 @@ import (
 	"strconv"
 )
 
-func RegisterWebhook(id int) error {
-	url := "https://feelsdankman.xyz/webhook/register?type=follow&id=" + strconv.Itoa(id)
+func RegisterWebhook(id int, host string) error {
+	url := "https://" + host + "/webhook/register?type=follow&id=" + strconv.Itoa(id)
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -33,14 +33,14 @@ func RegisterWebhook(id int) error {
 	return nil
 }
 
-func RemoveWebhook(id int) error {
+func RemoveWebhook(id int, host string) error {
 	activeSubs, err := GetActiveSubscriptions()
 	if err != nil {
 		log.Println(err)
 	}
 	for _, sub := range activeSubs.Data {
 		if sub.Condition.BroadcasterUserID == strconv.Itoa(id) {
-			err = DeleteWebhook(sub.ID)
+			err = DeleteWebhook(sub.ID, host)
 			if err != nil {
 				log.Println(err)
 			}
@@ -50,8 +50,8 @@ func RemoveWebhook(id int) error {
 	return errors.New("No webhook for this user found!")
 }
 
-func DeleteWebhook(id string) error {
-	url := "https://feelsdankman.xyz/webhook/twitch/setup/delete?id=" + id
+func DeleteWebhook(id string, host string) error {
+	url := "https://" + host + "/webhook/twitch/setup/delete?id=" + id
 	client := &http.Client{}
 
 	req, err := http.NewRequest("DELETE", url, nil)
