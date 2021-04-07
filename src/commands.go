@@ -22,29 +22,30 @@ func UserIdCommand(message twitch.PrivateMessage, client *twitch.Client) {
 	}
 }
 
-func AddFollowAlertCommand(message twitch.PrivateMessage, client *twitch.Client) {
+func AddFollowAlertCommand(message twitch.PrivateMessage, client *twitch.Client, host string) {
 	args := strings.Split(message.Message[16:], " ")
 
 	id, err := GetUserID(args[0])
 	if err != nil {
 		client.Say(message.Channel, `Couldn't find User-ID for "`+args[0]+`"`)
 	} else {
-		err = RegisterWebhook(id)
+		err = RegisterWebhook(id, host)
 		if err != nil {
 			client.Say(message.Channel, "Error adding follow alert!")
+			return
 		}
 		client.Say(message.Channel, "Added follow alert for "+args[0]+"!")
 	}
 }
 
-func RemoveFollowAlertCommand(message twitch.PrivateMessage, client *twitch.Client) {
+func RemoveFollowAlertCommand(message twitch.PrivateMessage, client *twitch.Client, host string) {
 	args := strings.Split(message.Message[19:], " ")
 
 	id, err := GetUserID(args[0])
 	if err != nil {
 		client.Say(message.Channel, `Couldn't find User-ID for "`+args[0]+`"`)
 	} else {
-		err = RemoveWebhook(id)
+		err = RemoveWebhook(id, host)
 		if err != nil {
 			client.Say(message.Channel, "Error removing follow alert!")
 		}
