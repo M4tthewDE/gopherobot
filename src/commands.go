@@ -29,7 +29,7 @@ func AddFollowAlertCommand(message twitch.PrivateMessage, client *twitch.Client,
 	if err != nil {
 		client.Say(message.Channel, `Couldn't find User-ID for "`+args[0]+`"`)
 	} else {
-		err = RegisterWebhook(id, host)
+		err = RegisterWebhook(id, host, message.Channel, message.User.Name)
 		if err != nil {
 			client.Say(message.Channel, "Error adding follow alert!")
 			return
