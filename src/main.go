@@ -59,6 +59,8 @@ func doCommand(message twitch.PrivateMessage) {
 		EchoCommand(message, client)
 	case "id":
 		UserIdCommand(message, client)
+	case "user":
+		UserCommand(message, client)
 	case "addfollowalert":
 		AddFollowAlertCommand(message, client, config.Api.Host)
 	case "removefollowalert":
