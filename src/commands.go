@@ -22,6 +22,21 @@ func UserIdCommand(message twitch.PrivateMessage, client *twitch.Client) {
 	}
 }
 
+func UserCommand(message twitch.PrivateMessage, client *twitch.Client) {
+	args := strings.Split(message.Message[6:], " ")
+	id, err := strconv.Atoi(args[0])
+	if err != nil {
+		client.Say(message.Channel, "Invalid User-ID "+args[0])
+	}
+
+	user, err := GetUser(id)
+	if err != nil {
+		client.Say(message.Channel, `Couldn't find User for "`+args[0]+`"`)
+	} else {
+		client.Say(message.Channel, "Username for "+args[0]+" is "+user)
+	}
+}
+
 func AddFollowAlertCommand(message twitch.PrivateMessage, client *twitch.Client, host string) {
 	args := strings.Split(message.Message[16:], " ")
 

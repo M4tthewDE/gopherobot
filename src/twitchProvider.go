@@ -54,6 +54,47 @@ func GetUserID(user string) (int, error) {
 	}
 	return id, nil
 }
+
+func GetUser(id int) (string, error) {
+	url := "https://api.twitch.tv/helix/users?id=" + strconv.Itoa(id)
+	client := &http.Client{}
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	req.Header.Add("Client-ID", os.Getenv("TWITCH_ID"))
+	req.Header.Add("Authorization", "Bearer "+os.Getenv("TWITCH_TOKEN"))
+
+	r, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer r.Body.Close()
+
+	data, err := io.ReadAll(r.Body)
+	if err != nil {
+		return "", err
+	}
+
+	if r.StatusCode != 200 {
+		return "", errors.New(strconv.Itoa(r.StatusCode))
+	}
+
+	var getUserIdJson GetUserIdJson
+	err = json.Unmarshal(data, &getUserIdJson)
+	if err != nil {
+		return "", err
+	}
+
+	if len(getUserIdJson.Data) == 0 {
+		return "", errors.New("No User-ID found!")
+	}
+
+	return getUserIdJson.Data[0].DisplayName, nil
+}
+
 func GetActiveSubscriptions() (ActiveSubscriptions, error) {
 	url := "https://api.twitch.tv/helix/eventsub/subscriptions"
 
