@@ -33,7 +33,6 @@ func main() {
 
 	client.OnPrivateMessage(onMessage)
 
-	//client.Join("gopherobot", "matthewde", "turtoise")
 	client.Join(config.Bot.Channels...)
 
 	go remoteMessageHandler(client)
@@ -56,17 +55,17 @@ func doCommand(message twitch.PrivateMessage) {
 	identifier := strings.Split(message.Message, " ")[0][1:]
 	switch identifier {
 	case "echo":
-		EchoCommand(message, client)
+		client.Say(message.Channel, EchoCommand(message))
 	case "id":
-		UserIdCommand(message, client)
+		client.Say(message.Channel, UserIdCommand(message))
 	case "user":
-		UserCommand(message, client)
+		client.Say(message.Channel, UserCommand(message))
 	case "addfollowalert":
-		AddFollowAlertCommand(message, client, config.Api.Host)
+		client.Say(message.Channel, AddFollowAlertCommand(message, config.Api.Host))
 	case "removefollowalert":
-		RemoveFollowAlertCommand(message, client, config.Api.Host)
+		client.Say(message.Channel, RemoveFollowAlertCommand(message, config.Api.Host))
 	case "ping":
-		PingCommand(message, client, startTime)
+		client.Say(message.Channel, PingCommand(message, startTime))
 	}
 }
 
