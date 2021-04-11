@@ -66,6 +66,27 @@ func RemoveFollowAlertCommand(message twitch.PrivateMessage, host string) string
 	}
 }
 
+func GetFollowAlertsCommand(host string) string {
+	followWebhook, err := GetWebhooks(host)
+	if err != nil {
+		return "Error getting Followalerts"
+	}
+	payload := "Total alerts: " + strconv.Itoa(len(followWebhook.Data)) + " Channels: "
+
+	var users []string
+	for _, webhook := range followWebhook.Data {
+		id, _ := strconv.Atoi(webhook.Condition.BroadcasterUserID)
+		user, _ := GetUser(id)
+		users = append(users, user)
+	}
+
+	for _, user := range users {
+		payload = payload + user + " "
+	}
+
+	return payload
+}
+
 func PingCommand(message twitch.PrivateMessage, startTime time.Time) string {
 	return "Pong! Uptime: " + time.Since(startTime).String() + "!"
 }
