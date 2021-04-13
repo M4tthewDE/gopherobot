@@ -114,6 +114,36 @@ func GetWebhooks(host string) (FollowWebhook, error) {
 	return followWebhook, nil
 }
 
+func GetApiUptime(host string) (string, error) {
+	url := "https://" + host + "/webhook/twitch/setup/uptime"
+	client := &http.Client{}
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", err
+	}
+
+	user := os.Getenv("API_USER")
+	pass := os.Getenv("API_PASS")
+	req.SetBasicAuth(user, pass)
+
+	r, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer r.Body.Close()
+
+	data, err := io.ReadAll(r.Body)
+	if err != nil {
+		return "", err
+	}
+
+	if r.StatusCode != 200 {
+		return "", errors.New(strconv.Itoa(r.StatusCode))
+	}
+	return string(data), nil
+}
+
 type FollowWebhook struct {
 	Total int `json:"total"`
 	Data  []struct {

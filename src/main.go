@@ -67,7 +67,7 @@ func doCommand(message twitch.PrivateMessage) {
 	case "getfollowalerts":
 		client.Say(message.Channel, GetFollowAlertsCommand(config.Api.Host))
 	case "ping":
-		client.Say(message.Channel, PingCommand(message, startTime))
+		client.Say(message.Channel, PingCommand(startTime, config.Api.Host))
 	}
 }
 
