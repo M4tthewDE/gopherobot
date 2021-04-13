@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gempir/go-twitch-irc/v2"
+	"github.com/hako/durafmt"
 	"strconv"
 	"strings"
 	"time"
@@ -87,6 +88,14 @@ func GetFollowAlertsCommand(host string) string {
 	return payload
 }
 
-func PingCommand(message twitch.PrivateMessage, startTime time.Time) string {
-	return "Pong! Uptime: " + time.Since(startTime).String() + "!"
+func PingCommand(startTime time.Time, host string) string {
+	uptime := time.Since(startTime)
+	result := "Pong! Uptime: " + durafmt.Parse(uptime).LimitFirstN(2).String() + "!"
+
+	api_uptime, err := GetApiUptime(host)
+	if err != nil {
+		return result + " API-Uptime: Unavailable monkaS"
+	}
+
+	return result + " API-Uptime: " + api_uptime
 }
