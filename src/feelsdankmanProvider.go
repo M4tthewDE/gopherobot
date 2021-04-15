@@ -11,8 +11,8 @@ import (
 	"time"
 )
 
-func RegisterWebhook(id int, host string, channel string, name string) error {
-	url := "https://" + host + "/webhook/register?type=follow&id=" + strconv.Itoa(id) + "&user=" + name + "&channel=" + channel
+func RegisterWebhook(id int, channel string, name string) error {
+	url := "https://" + Conf.Api.Host + "/webhook/register?type=follow&id=" + strconv.Itoa(id) + "&user=" + name + "&channel=" + channel
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -36,14 +36,14 @@ func RegisterWebhook(id int, host string, channel string, name string) error {
 	return nil
 }
 
-func RemoveWebhook(id int, host string) error {
+func RemoveWebhook(id int) error {
 	activeSubs, err := GetActiveSubscriptions()
 	if err != nil {
 		log.Println(err)
 	}
 	for _, sub := range activeSubs.Data {
 		if sub.Condition.BroadcasterUserID == strconv.Itoa(id) {
-			err = DeleteWebhook(sub.ID, host)
+			err = DeleteWebhook(sub.ID)
 			if err != nil {
 				log.Println(err)
 			}
@@ -53,8 +53,8 @@ func RemoveWebhook(id int, host string) error {
 	return errors.New("No webhook for this user found!")
 }
 
-func DeleteWebhook(id string, host string) error {
-	url := "https://" + host + "/webhook/twitch/setup/delete?id=" + id
+func DeleteWebhook(id string) error {
+	url := "https://" + Conf.Api.Host + "/webhook/twitch/setup/delete?id=" + id
 	client := &http.Client{}
 
 	req, err := http.NewRequest("DELETE", url, nil)
@@ -78,8 +78,8 @@ func DeleteWebhook(id string, host string) error {
 	return nil
 }
 
-func GetWebhooks(host string) (FollowWebhook, error) {
-	url := "https://" + host + "/webhook/twitch/setup/subscriptions"
+func GetWebhooks() (FollowWebhook, error) {
+	url := "https://" + Conf.Api.Host + "/webhook/twitch/setup/subscriptions"
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -114,8 +114,8 @@ func GetWebhooks(host string) (FollowWebhook, error) {
 	return followWebhook, nil
 }
 
-func GetApiUptime(host string) (string, error) {
-	url := "https://" + host + "/webhook/twitch/setup/uptime"
+func GetApiUptime() (string, error) {
+	url := "https://" + Conf.Api.Host + "/webhook/twitch/setup/uptime"
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", url, nil)
