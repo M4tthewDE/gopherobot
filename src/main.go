@@ -12,8 +12,8 @@ import (
 )
 
 var client *twitch.Client
-var startTime time.Time
-var config Config
+var StartTime time.Time
+var Conf Config
 
 func main() {
 	f, err := os.Open("../config.yml")
@@ -23,17 +23,17 @@ func main() {
 	defer f.Close()
 
 	decoder := yaml.NewDecoder(f)
-	err = decoder.Decode(&config)
+	err = decoder.Decode(&Conf)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	startTime = time.Now()
+	StartTime = time.Now()
 	client = twitch.NewClient("gopherobot", "oauth:"+os.Getenv("TWITCH_TOKEN"))
 
 	client.OnPrivateMessage(onMessage)
 
-	client.Join(config.Bot.Channels...)
+	client.Join(Conf.Bot.Channels...)
 
 	go remoteMessageHandler(client)
 
@@ -46,7 +46,7 @@ func main() {
 func onMessage(message twitch.PrivateMessage) {
 	prefix := message.Message[0:1]
 
-	if prefix == config.Bot.Prefix && message.User.ID == "116672490" {
+	if prefix == Conf.Bot.Prefix && message.User.ID == "116672490" {
 		doCommand(message)
 	}
 }
@@ -61,13 +61,13 @@ func doCommand(message twitch.PrivateMessage) {
 	case "user":
 		client.Say(message.Channel, UserCommand(message))
 	case "addfollowalert":
-		client.Say(message.Channel, AddFollowAlertCommand(message, config.Api.Host))
+		client.Say(message.Channel, AddFollowAlertCommand(message))
 	case "removefollowalert":
-		client.Say(message.Channel, RemoveFollowAlertCommand(message, config.Api.Host))
+		client.Say(message.Channel, RemoveFollowAlertCommand(message))
 	case "getfollowalerts":
-		client.Say(message.Channel, GetFollowAlertsCommand(config.Api.Host))
+		client.Say(message.Channel, GetFollowAlertsCommand())
 	case "ping":
-		client.Say(message.Channel, PingCommand(startTime, config.Api.Host))
+		client.Say(message.Channel, PingCommand())
 	}
 }
 

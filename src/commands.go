@@ -37,14 +37,14 @@ func UserCommand(message twitch.PrivateMessage) string {
 	}
 }
 
-func AddFollowAlertCommand(message twitch.PrivateMessage, host string) string {
+func AddFollowAlertCommand(message twitch.PrivateMessage) string {
 	args := strings.Split(message.Message[16:], " ")
 
 	id, err := GetUserID(args[0])
 	if err != nil {
 		return `Couldn't find User-ID for "` + args[0] + `"`
 	} else {
-		err = RegisterWebhook(id, host, message.Channel, message.User.Name)
+		err = RegisterWebhook(id, message.Channel, message.User.Name)
 		if err != nil {
 			return "Error adding follow alert!"
 		}
@@ -52,14 +52,14 @@ func AddFollowAlertCommand(message twitch.PrivateMessage, host string) string {
 	}
 }
 
-func RemoveFollowAlertCommand(message twitch.PrivateMessage, host string) string {
+func RemoveFollowAlertCommand(message twitch.PrivateMessage) string {
 	args := strings.Split(message.Message[19:], " ")
 
 	id, err := GetUserID(args[0])
 	if err != nil {
 		return `Couldn't find User-ID for "` + args[0] + `"`
 	} else {
-		err = RemoveWebhook(id, host)
+		err = RemoveWebhook(id)
 		if err != nil {
 			return "Error removing follow alert!"
 		}
@@ -67,8 +67,8 @@ func RemoveFollowAlertCommand(message twitch.PrivateMessage, host string) string
 	}
 }
 
-func GetFollowAlertsCommand(host string) string {
-	followWebhook, err := GetWebhooks(host)
+func GetFollowAlertsCommand() string {
+	followWebhook, err := GetWebhooks()
 	if err != nil {
 		return "Error getting Followalerts"
 	}
@@ -88,11 +88,11 @@ func GetFollowAlertsCommand(host string) string {
 	return payload
 }
 
-func PingCommand(startTime time.Time, host string) string {
-	uptime := time.Since(startTime)
+func PingCommand() string {
+	uptime := time.Since(StartTime)
 	result := "Pong! Uptime: " + durafmt.Parse(uptime).LimitFirstN(2).String() + "!"
 
-	api_uptime, err := GetApiUptime(host)
+	api_uptime, err := GetApiUptime()
 	if err != nil {
 		return result + " API-Uptime: Unavailable monkaS"
 	}
