@@ -59,7 +59,7 @@ func RemoveFollowAlertCommand(message twitch.PrivateMessage) string {
 	if err != nil {
 		return `Couldn't find User-ID for "` + args[0] + `"`
 	} else {
-		err = RemoveWebhook(id)
+		err = RemoveWebhook(id, message.User.Name, message.Channel)
 		if err != nil {
 			return "Error removing follow alert!"
 		}

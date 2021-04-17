@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -36,25 +35,9 @@ func RegisterWebhook(id int, channel string, name string) error {
 	return nil
 }
 
-func RemoveWebhook(id int) error {
-	activeSubs, err := GetActiveSubscriptions()
-	if err != nil {
-		log.Println(err)
-	}
-	for _, sub := range activeSubs.Data {
-		if sub.Condition.BroadcasterUserID == strconv.Itoa(id) {
-			err = DeleteWebhook(sub.ID)
-			if err != nil {
-				log.Println(err)
-			}
-			return nil
-		}
-	}
-	return errors.New("No webhook for this user found!")
-}
-
-func DeleteWebhook(id string) error {
-	url := "https://" + Conf.Api.Host + "/webhook/twitch/setup/delete?id=" + id
+func RemoveWebhook(id int, username string, channel string) error {
+	broadcaster_id := strconv.Itoa(id)
+	url := "https://" + Conf.Api.Host + "/webhook/twitch/setup/delete?broadcaster=" + broadcaster_id + "&user=" + username + "&channel=" + channel
 	client := &http.Client{}
 
 	req, err := http.NewRequest("DELETE", url, nil)
