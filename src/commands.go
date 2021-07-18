@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/gempir/go-twitch-irc/v2"
-	"github.com/hako/durafmt"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gempir/go-twitch-irc/v2"
+	"github.com/hako/durafmt"
 )
 
 func EchoCommand(message twitch.PrivateMessage) string {
@@ -90,12 +91,21 @@ func GetFollowAlertsCommand() string {
 
 func PingCommand() string {
 	uptime := time.Since(StartTime)
-	result := "Pong! Uptime: " + durafmt.Parse(uptime).LimitFirstN(2).String() + "!"
+	result := "Pong! Uptime: " + durafmt.Parse(uptime).LimitFirstN(2).String() + ","
 
 	api_uptime, err := GetApiUptime()
 	if err != nil {
-		return result + " API-Uptime: Unavailable monkaS"
+		result = result + " API-Uptime: Unavailable monkaS"
+	} else {
+		result = result + " API-Uptime: " + api_uptime + ","
 	}
 
-	return result + " API-Uptime: " + api_uptime
+	branch, err := GetCommit()
+	if err != nil {
+		result = result + " Commit not found monkaS"
+	} else {
+		result = result + " Commit: " + branch
+	}
+
+	return result
 }
