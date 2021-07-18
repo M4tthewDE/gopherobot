@@ -1,14 +1,15 @@
 package main
 
 import (
-	"github.com/gempir/go-twitch-irc/v2"
-	"gopkg.in/yaml.v2"
 	"log"
 	"net"
 	"net/rpc"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/gempir/go-twitch-irc/v2"
+	"gopkg.in/yaml.v2"
 )
 
 var client *twitch.Client
@@ -107,5 +108,7 @@ type Config struct {
 	} `yaml:"bot"`
 	Api struct {
 		Host string `yaml:"host"`
+		User string `yaml:"user"`
+		Pass string `yaml:"pass"`
 	} `yaml:"api"`
 }

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 )
@@ -19,8 +18,8 @@ func RegisterWebhook(id int, channel string, name string) error {
 		return err
 	}
 
-	user := os.Getenv("API_USER")
-	pass := os.Getenv("API_PASS")
+	user := Conf.Api.User
+	pass := Conf.Api.Pass
 	req.SetBasicAuth(user, pass)
 
 	r, err := client.Do(req)
@@ -45,8 +44,8 @@ func RemoveWebhook(id int, username string, channel string) error {
 		return err
 	}
 
-	user := os.Getenv("API_USER")
-	pass := os.Getenv("API_PASS")
+	user := Conf.Api.User
+	pass := Conf.Api.Pass
 	req.SetBasicAuth(user, pass)
 
 	r, err := client.Do(req)
@@ -70,8 +69,8 @@ func GetWebhooks() (FollowWebhook, error) {
 		return FollowWebhook{}, err
 	}
 
-	user := os.Getenv("API_USER")
-	pass := os.Getenv("API_PASS")
+	user := Conf.Api.User
+	pass := Conf.Api.Pass
 	req.SetBasicAuth(user, pass)
 
 	r, err := client.Do(req)
@@ -106,8 +105,8 @@ func GetApiUptime() (string, error) {
 		return "", err
 	}
 
-	user := os.Getenv("API_USER")
-	pass := os.Getenv("API_PASS")
+	user := Conf.Api.User
+	pass := Conf.Api.Pass
 	req.SetBasicAuth(user, pass)
 
 	r, err := client.Do(req)
