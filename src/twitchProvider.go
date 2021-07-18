@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 )
@@ -20,8 +19,8 @@ func GetUserID(user string) (int, error) {
 		log.Fatal(err)
 	}
 
-	req.Header.Add("Client-ID", os.Getenv("TWITCH_ID"))
-	req.Header.Add("Authorization", "Bearer "+os.Getenv("TWITCH_TOKEN"))
+	req.Header.Add("Client-ID", Conf.Twitch.Client_ID)
+	req.Header.Add("Authorization", "Bearer "+Conf.Twitch.Token)
 
 	r, err := client.Do(req)
 	if err != nil {
@@ -64,8 +63,8 @@ func GetUser(id int) (string, error) {
 		log.Fatal(err)
 	}
 
-	req.Header.Add("Client-ID", os.Getenv("TWITCH_ID"))
-	req.Header.Add("Authorization", "Bearer "+os.Getenv("TWITCH_TOKEN"))
+	req.Header.Add("Client-ID", Conf.Twitch.Client_ID)
+	req.Header.Add("Authorization", "Bearer "+Conf.Twitch.Token)
 
 	r, err := client.Do(req)
 	if err != nil {

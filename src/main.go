@@ -111,4 +111,8 @@ type Config struct {
 		User string `yaml:"user"`
 		Pass string `yaml:"pass"`
 	} `yaml:"api"`
+	Twitch struct {
+		Token     string `yaml:"token"`
+		Client_ID string `yaml:"client_id"`
+	} `yaml:"twitch"`
 }
