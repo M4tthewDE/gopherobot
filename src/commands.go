@@ -100,11 +100,18 @@ func PingCommand() string {
 		result = result + " API-Uptime: " + api_uptime + ","
 	}
 
-	branch, err := GetCommit()
+	commit, err := GetCommit()
 	if err != nil {
 		result = result + " Commit not found monkaS"
 	} else {
-		result = result + " Commit: " + branch
+		result = result + " Commit: " + commit + ","
+	}
+
+	branch, err := GetBranch()
+	if err != nil {
+		result = result + " Branch not found monkaS"
+	} else {
+		result = result + " Branch: " + branch
 	}
 
 	return result
