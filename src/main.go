@@ -30,7 +30,7 @@ func main() {
 	}
 
 	StartTime = time.Now()
-	client = twitch.NewClient("gopherobot", "oauth:"+os.Getenv("TWITCH_TOKEN"))
+	client = twitch.NewClient("gopherobot", "oauth:"+Conf.Twitch.Token)
 
 	client.OnPrivateMessage(onMessage)
 
