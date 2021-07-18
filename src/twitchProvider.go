@@ -44,7 +44,7 @@ func GetUserID(user string) (int, error) {
 	}
 
 	if len(getUserIdJson.Data) == 0 {
-		return 0, errors.New("No User-ID found!")
+		return 0, errors.New("no User-ID found")
 	}
 
 	id, err := strconv.Atoi(getUserIdJson.Data[0].ID)
@@ -88,7 +88,7 @@ func GetUser(id int) (string, error) {
 	}
 
 	if len(getUserIdJson.Data) == 0 {
-		return "", errors.New("No User-ID found!")
+		return "", errors.New("no User-ID found")
 	}
 
 	return getUserIdJson.Data[0].DisplayName, nil
