@@ -33,6 +33,7 @@ func main() {
 	client = twitch.NewClient("gopherobot", "oauth:"+Conf.Twitch.Token)
 
 	client.OnPrivateMessage(onMessage)
+	client.OnWhisperMessage(onWhisper)
 
 	client.Join(Conf.Bot.Channels...)
 
@@ -41,6 +42,22 @@ func main() {
 	err = client.Connect()
 	if err != nil {
 		panic(err)
+	}
+}
+
+func onWhisper(message twitch.WhisperMessage) {
+	prefix := message.Message[0:1]
+
+	if prefix == Conf.Bot.Prefix && message.User.ID == "116672490" {
+		doWhisperCommand(message)
+	}
+}
+
+func doWhisperCommand(message twitch.WhisperMessage) {
+	identifier := strings.Split(message.Message, " ")[0][1:]
+	switch identifier {
+	case "saveclip":
+		SaveClipCommand(message)
 	}
 }
 
