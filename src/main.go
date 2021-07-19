@@ -86,6 +86,8 @@ func doCommand(message twitch.PrivateMessage) {
 		client.Say(message.Channel, GetFollowAlertsCommand())
 	case "ping":
 		client.Say(message.Channel, PingCommand())
+	case "rawmsg":
+		client.Say(message.Channel, RawMsgCommand(message.Raw))
 	}
 }
 
@@ -132,4 +134,7 @@ type Config struct {
 		Token     string `yaml:"token"`
 		Client_ID string `yaml:"client_id"`
 	} `yaml:"twitch"`
+	Haste struct {
+		Url string `yaml:"url"`
+	} `yaml:"haste"`
 }
