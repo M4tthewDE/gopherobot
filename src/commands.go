@@ -116,3 +116,7 @@ func PingCommand() string {
 
 	return result
 }
+
+func RawMsgCommand(raw_message string) string {
+	return UploadToHaste(raw_message)
+}
