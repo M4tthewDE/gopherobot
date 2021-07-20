@@ -100,19 +100,9 @@ func PingCommand(message twitch.PrivateMessage) string {
 		result = result + " API-Uptime: " + api_uptime + ","
 	}
 
-	commit, err := GetCommit()
-	if err != nil {
-		result = result + " Commit not found monkaS"
-	} else {
-		result = result + " Commit: " + commit + ","
-	}
+	result = result + " Commit: " + Conf.Git.Commit + ","
+	result = result + " Branch: " + Conf.Git.Branch + ","
 
-	branch, err := GetBranch()
-	if err != nil {
-		result = result + " Branch not found monkaS"
-	} else {
-		result = result + " Branch: " + branch + ","
-	}
 	latency := GetLatency(message)
 	result = result + " Latency to tmi: " + latency
 
