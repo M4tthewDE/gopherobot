@@ -89,7 +89,7 @@ func GetFollowAlertsCommand() string {
 	return payload
 }
 
-func PingCommand() string {
+func PingCommand(message twitch.PrivateMessage) string {
 	uptime := time.Since(StartTime)
 	result := "Pong! Uptime: " + durafmt.Parse(uptime).LimitFirstN(2).String() + ","
 
@@ -111,8 +111,10 @@ func PingCommand() string {
 	if err != nil {
 		result = result + " Branch not found monkaS"
 	} else {
-		result = result + " Branch: " + branch
+		result = result + " Branch: " + branch + ","
 	}
+	latency := GetLatency(message)
+	result = result + " Latency to tmi: " + latency
 
 	return result
 }
