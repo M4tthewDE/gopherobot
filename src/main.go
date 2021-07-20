@@ -17,6 +17,7 @@ var StartTime time.Time
 var Conf Config
 
 func main() {
+	// setup config
 	f, err := os.Open("../config.yml")
 	if err != nil {
 		log.Fatal(err)
@@ -28,6 +29,18 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	branch, err := GetBranch()
+	if err != nil {
+		log.Fatal(err)
+	}
+	Conf.Git.Branch = branch
+
+	commit, err := GetCommit()
+	if err != nil {
+		log.Fatal(err)
+	}
+	Conf.Git.Commit = commit
 
 	StartTime = time.Now()
 	client = twitch.NewClient("gopherobot", "oauth:"+Conf.Twitch.Token)
@@ -137,4 +150,8 @@ type Config struct {
 	Haste struct {
 		Url string `yaml:"url"`
 	} `yaml:"haste"`
+	Git struct {
+		Branch string
+		Commit string
+	}
 }
