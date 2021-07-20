@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"os/exec"
 	"strings"
+	"time"
+
+	"github.com/gempir/go-twitch-irc/v2"
 )
 
 func GetCommit() (string, error) {
@@ -28,4 +31,9 @@ func GetBranch() (string, error) {
 		return "", err
 	}
 	return strings.TrimSuffix(out.String(), "\n"), nil
+}
+
+func GetLatency(message twitch.PrivateMessage) string {
+	latency := time.Since(message.Time)
+	return latency.String()
 }
