@@ -17,7 +17,7 @@ var StartTime time.Time
 var Conf Config
 
 func main() {
-	f, err := os.Open("../config.yml")
+	f, err := os.Open("config.yml")
 	if err != nil {
 		log.Fatal(err)
 	}
