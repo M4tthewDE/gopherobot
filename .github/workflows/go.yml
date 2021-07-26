@@ -20,12 +20,9 @@ jobs:
         go-version: 1.16
     - name: Download Modules
       run: go get
-      working-directory: src
 
     - name: Build
-      working-directory: src
       run: go build -v
 
     - name: Test
-      working-directory: src
       run: go test -v
