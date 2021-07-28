@@ -126,6 +126,26 @@ func TmpJoinCommand(message twitch.PrivateMessage) string {
 	return "Joined #" + channel
 }
 
+func TmpLeaveCommand(message twitch.PrivateMessage) string {
+	if len(message.Message) < 10 {
+		return `No channel provided`
+	}
+	args := strings.Split(message.Message[10:], " ")
+	channel := args[0]
+
+	client.Depart(channel)
+
+	var index int
+	for i, c := range Channels {
+		if c == channel {
+			index = i
+		}
+	}
+	Channels = append(Channels[:index], Channels[index+1:]...)
+
+	return "Left #" + channel
+}
+
 func GetChannelsCommand(message twitch.PrivateMessage) string {
 	var result string
 	for _, channel := range Channels {

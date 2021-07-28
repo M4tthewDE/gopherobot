@@ -104,6 +104,8 @@ func doCommand(message twitch.PrivateMessage) {
 		client.Say(message.Channel, RawMsgCommand(message.Raw))
 	case "tmpjoin":
 		client.Say(message.Channel, TmpJoinCommand(message))
+	case "tmpleave":
+		client.Say(message.Channel, TmpLeaveCommand(message))
 	case "getchannels":
 		client.Say(message.Channel, GetChannelsCommand(message))
 	}
