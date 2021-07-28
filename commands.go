@@ -19,16 +19,17 @@ func UserIdCommand(message twitch.PrivateMessage) string {
 	if err != nil {
 		return `Couldn't find User-ID for "` + args[0] + `"`
 	} else {
-		return "User-ID of " + args[0] + " is " + strconv.Itoa(id)
+		return "User-ID of " + args[0] + " is " + id
 	}
 }
 
 func UserCommand(message twitch.PrivateMessage) string {
-	args := strings.Split(message.Message[6:], " ")
-	id, err := strconv.Atoi(args[0])
-	if err != nil {
-		return "Invalid User-ID " + args[0]
+	if len(message.Message) < 6 {
+		return `No ID provided`
 	}
+	args := strings.Split(message.Message[6:], " ")
+
+	id := args[0]
 
 	user, err := GetUser(id)
 	if err != nil {
@@ -77,7 +78,7 @@ func GetFollowAlertsCommand() string {
 
 	var users []string
 	for _, webhook := range followWebhook.Data {
-		id, _ := strconv.Atoi(webhook.Condition.BroadcasterUserID)
+		id := webhook.Condition.BroadcasterUserID
 		user, _ := GetUser(id)
 		users = append(users, user)
 	}
