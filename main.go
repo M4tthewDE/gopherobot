@@ -100,6 +100,8 @@ func doCommand(message twitch.PrivateMessage) {
 		client.Say(message.Channel, PingCommand(message))
 	case "rawmsg":
 		client.Say(message.Channel, RawMsgCommand(message.Raw))
+	case "tmpjoin":
+		client.Say(message.Channel, TmpJoinCommand(message))
 	}
 }
 

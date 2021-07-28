@@ -113,3 +113,12 @@ func PingCommand(message twitch.PrivateMessage) string {
 func RawMsgCommand(raw_message string) string {
 	return UploadToHaste(raw_message)
 }
+
+func TmpJoinCommand(message twitch.PrivateMessage) string {
+	if len(message.Message) < 9 {
+		return `No channel provided`
+	}
+	args := strings.Split(message.Message[9:], " ")
+	client.Join(args[0])
+	return "Joined #" + args[0]
+}
