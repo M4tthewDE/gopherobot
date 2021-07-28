@@ -119,6 +119,18 @@ func TmpJoinCommand(message twitch.PrivateMessage) string {
 		return `No channel provided`
 	}
 	args := strings.Split(message.Message[9:], " ")
-	client.Join(args[0])
-	return "Joined #" + args[0]
+	channel := args[0]
+
+	client.Join(channel)
+	Channels = append(Channels, channel)
+	return "Joined #" + channel
+}
+
+func GetChannelsCommand(message twitch.PrivateMessage) string {
+	var result string
+	for _, channel := range Channels {
+		result = result + ", " + channel
+	}
+	result = "Joined Channels: [" + result[2:] + "]"
+	return result
 }

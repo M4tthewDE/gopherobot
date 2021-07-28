@@ -15,6 +15,7 @@ import (
 var client *twitch.Client
 var StartTime time.Time
 var Conf Config
+var Channels []string
 
 func main() {
 	f, err := os.Open("config.yml")
@@ -48,6 +49,7 @@ func main() {
 	client.OnWhisperMessage(onWhisper)
 
 	client.Join(Conf.Bot.Channels...)
+	Channels = append(Channels, Conf.Bot.Channels...)
 
 	go remoteMessageHandler(client)
 
@@ -102,6 +104,8 @@ func doCommand(message twitch.PrivateMessage) {
 		client.Say(message.Channel, RawMsgCommand(message.Raw))
 	case "tmpjoin":
 		client.Say(message.Channel, TmpJoinCommand(message))
+	case "getchannels":
+		client.Say(message.Channel, GetChannelsCommand(message))
 	}
 }
 
