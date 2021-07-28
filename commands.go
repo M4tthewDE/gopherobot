@@ -113,3 +113,44 @@ func PingCommand(message twitch.PrivateMessage) string {
 func RawMsgCommand(raw_message string) string {
 	return UploadToHaste(raw_message)
 }
+
+func TmpJoinCommand(message twitch.PrivateMessage) string {
+	if len(message.Message) < 9 {
+		return `No channel provided`
+	}
+	args := strings.Split(message.Message[9:], " ")
+	channel := args[0]
+
+	client.Join(channel)
+	Channels = append(Channels, channel)
+	return "Joined #" + channel
+}
+
+func TmpLeaveCommand(message twitch.PrivateMessage) string {
+	if len(message.Message) < 10 {
+		return `No channel provided`
+	}
+	args := strings.Split(message.Message[10:], " ")
+	channel := args[0]
+
+	client.Depart(channel)
+
+	var index int
+	for i, c := range Channels {
+		if c == channel {
+			index = i
+		}
+	}
+	Channels = append(Channels[:index], Channels[index+1:]...)
+
+	return "Left #" + channel
+}
+
+func GetChannelsCommand(message twitch.PrivateMessage) string {
+	var result string
+	for _, channel := range Channels {
+		result = result + ", " + channel
+	}
+	result = "Joined Channels: [" + result[2:] + "]"
+	return result
+}
