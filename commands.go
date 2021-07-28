@@ -14,7 +14,11 @@ func EchoCommand(message twitch.PrivateMessage) string {
 }
 
 func UserIdCommand(message twitch.PrivateMessage) string {
+	if len(message.Message) < 4 {
+		return `No user provided`
+	}
 	args := strings.Split(message.Message[4:], " ")
+
 	id, err := GetUserID(args[0])
 	if err != nil {
 		return `Couldn't find User-ID for "` + args[0] + `"`
