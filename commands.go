@@ -19,7 +19,7 @@ func UserIdCommand(message twitch.PrivateMessage) string {
 	if err != nil {
 		return `Couldn't find User-ID for "` + args[0] + `"`
 	} else {
-		return "User-ID of " + args[0] + " is " + strconv.Itoa(id)
+		return "User-ID of " + args[0] + " is " + id
 	}
 }
 

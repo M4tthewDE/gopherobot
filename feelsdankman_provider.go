@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-func RegisterWebhook(id int, channel string, name string) error {
-	url := "https://" + Conf.Api.Host + "/webhook/register?type=follow&id=" + strconv.Itoa(id) + "&user=" + name + "&channel=" + channel
+func RegisterWebhook(id string, channel string, name string) error {
+	url := "https://" + Conf.Api.Host + "/webhook/register?type=follow&id=" + id + "&user=" + name + "&channel=" + channel
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -34,8 +34,8 @@ func RegisterWebhook(id int, channel string, name string) error {
 	return nil
 }
 
-func RemoveWebhook(id int, username string, channel string) error {
-	broadcaster_id := strconv.Itoa(id)
+func RemoveWebhook(id string, username string, channel string) error {
+	broadcaster_id := id
 	url := "https://" + Conf.Api.Host + "/webhook/twitch/setup/delete?broadcaster=" + broadcaster_id + "&user=" + username + "&channel=" + channel
 	client := &http.Client{}
 
