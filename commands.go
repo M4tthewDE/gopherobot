@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
@@ -184,5 +185,19 @@ func UrlDecodeCommand(message twitch.PrivateMessage) string {
 		log.Println(err)
 		return "Error decoding"
 	}
+	return result
+}
+
+func HttpStatusCommand(message twitch.PrivateMessage) string {
+	if len(message.Message) < 12 {
+		return "No code provided"
+	}
+	args := strings.Split(message.Message[12:], " ")
+
+	code, err := strconv.Atoi(args[0])
+	if err != nil {
+		return "No valid number provided"
+	}
+	result := http.StatusText(code)
 	return result
 }
