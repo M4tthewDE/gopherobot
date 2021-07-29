@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/url"
 	"strconv"
 	"strings"
@@ -170,4 +171,18 @@ func UrlEncodeCommand(message twitch.PrivateMessage) string {
 	}
 	content := message.Message[11:]
 	return url.QueryEscape(content)
+}
+
+func UrlDecodeCommand(message twitch.PrivateMessage) string {
+	if len(message.Message) < 11 {
+		return "Nothing to decode"
+	}
+	content := message.Message[11:]
+
+	result, err := url.QueryUnescape(content)
+	if err != nil {
+		log.Println(err)
+		return "Error decoding"
+	}
+	return result
 }

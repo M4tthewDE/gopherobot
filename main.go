@@ -110,6 +110,8 @@ func doCommand(message twitch.PrivateMessage) {
 		client.Say(message.Channel, GetChannelsCommand(message))
 	case "urlencode":
 		client.Say(message.Channel, UrlEncodeCommand(message))
+	case "urldecode":
+		client.Say(message.Channel, UrlDecodeCommand(message))
 	}
 }
 
