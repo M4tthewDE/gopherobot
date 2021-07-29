@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -161,4 +162,12 @@ func GetChannelsCommand(message twitch.PrivateMessage) string {
 	}
 	result = "Joined Channels: [" + result[2:] + "]"
 	return result
+}
+
+func UrlEncodeCommand(message twitch.PrivateMessage) string {
+	if len(message.Message) < 11 {
+		return "Nothing to encode"
+	}
+	content := message.Message[11:]
+	return url.QueryEscape(content)
 }
