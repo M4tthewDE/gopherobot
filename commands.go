@@ -151,6 +151,10 @@ func TmpLeaveCommand(message twitch.PrivateMessage) string {
 }
 
 func GetChannelsCommand(message twitch.PrivateMessage) string {
+	if message.Channel != "matthewde" && message.Channel != "gopherobot" {
+		return "Command not available in this channel to prevent pings"
+	}
+
 	var result string
 	for _, channel := range Channels {
 		result = result + ", " + channel
