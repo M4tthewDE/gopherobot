@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
@@ -205,6 +206,19 @@ func StreamInfoCommand(message twitch.PrivateMessage) string {
 	result := "Live: "
 	result += resp.Data.Streams[0].Title + ", "
 	result += resp.Data.Streams[0].GameName + ", "
-	result += strconv.Itoa(resp.Data.Streams[0].ViewerCount)
+	result += strconv.Itoa(resp.Data.Streams[0].ViewerCount) 
+}
+
+func HttpStatusCommand(message twitch.PrivateMessage) string {
+	if len(message.Message) < 12 {
+		return "No code provided"
+	}
+	args := strings.Split(message.Message[12:], " ")
+
+	code, err := strconv.Atoi(args[0])
+	if err != nil {
+		return "No valid number provided"
+	}
+	result := http.StatusText(code)
 	return result
 }
