@@ -188,6 +188,28 @@ func UrlDecodeCommand(message twitch.PrivateMessage) string {
 	return result
 }
 
+func StreamInfoCommand(message twitch.PrivateMessage) string {
+	if len(message.Message) < 12 {
+		return "No channel given"
+	}
+	args := strings.Split(message.Message[12:], " ")
+	channel := args[0]
+
+	resp, err := GetStreamInfo(channel)
+	if err != nil {
+		log.Println(err)
+	}
+	if len(resp.Data.Streams) < 1 {
+		return "Not live"
+	}
+
+	result := ""
+	result += resp.Data.Streams[0].Title + ", "
+	result += resp.Data.Streams[0].GameName + ", "
+	result += strconv.Itoa(resp.Data.Streams[0].ViewerCount)
+	return result
+}
+
 func HttpStatusCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 12 {
 		return "No code provided"

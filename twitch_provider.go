@@ -37,3 +37,20 @@ func GetUser(id string) (string, error) {
 	}
 	return resp.Data.Users[0].Login, nil
 }
+
+func GetStreamInfo(user string) (*helix.StreamsResponse, error) {
+	client, err := helix.NewClient(&helix.Options{
+		ClientID:        Conf.Twitch.Client_ID,
+		UserAccessToken: Conf.Twitch.Token,
+	})
+	if err != nil {
+		return nil, err
+	}
+	resp, err := client.GetStreams(&helix.StreamsParams{
+		UserLogins: []string{user},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
