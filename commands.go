@@ -203,7 +203,7 @@ func StreamInfoCommand(message twitch.PrivateMessage) string {
 		return "Not live"
 	}
 
-	result := "Live: "
+	result := ""
 	result += resp.Data.Streams[0].Title + ", "
 	result += resp.Data.Streams[0].GameName + ", "
 	result += strconv.Itoa(resp.Data.Streams[0].ViewerCount)
