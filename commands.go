@@ -206,7 +206,8 @@ func StreamInfoCommand(message twitch.PrivateMessage) string {
 	result := "Live: "
 	result += resp.Data.Streams[0].Title + ", "
 	result += resp.Data.Streams[0].GameName + ", "
-	result += strconv.Itoa(resp.Data.Streams[0].ViewerCount) 
+	result += strconv.Itoa(resp.Data.Streams[0].ViewerCount)
+	return result
 }
 
 func HttpStatusCommand(message twitch.PrivateMessage) string {
