@@ -12,11 +12,17 @@ import (
 	"github.com/hako/durafmt"
 )
 
-func EchoCommand(message twitch.PrivateMessage) string {
+type CommandHandler struct {
+	botStartTime time.Time
+	branch       string
+	commit       string
+}
+
+func (cmdHandler *CommandHandler) EchoCommand(message twitch.PrivateMessage) string {
 	return message.Message[6:]
 }
 
-func UserIdCommand(message twitch.PrivateMessage) string {
+func (cmdHandler *CommandHandler) UserIdCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 4 {
 		return `No user provided`
 	}
@@ -30,7 +36,7 @@ func UserIdCommand(message twitch.PrivateMessage) string {
 	}
 }
 
-func UserCommand(message twitch.PrivateMessage) string {
+func (cmdHandler *CommandHandler) UserCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 6 {
 		return `No ID provided`
 	}
@@ -46,7 +52,7 @@ func UserCommand(message twitch.PrivateMessage) string {
 	}
 }
 
-func AddFollowAlertCommand(message twitch.PrivateMessage) string {
+func (cmdHandler *CommandHandler) AddFollowAlertCommand(message twitch.PrivateMessage) string {
 	args := strings.Split(message.Message[16:], " ")
 
 	id, err := GetUserID(args[0])
@@ -61,7 +67,7 @@ func AddFollowAlertCommand(message twitch.PrivateMessage) string {
 	}
 }
 
-func RemoveFollowAlertCommand(message twitch.PrivateMessage) string {
+func (cmdHandler *CommandHandler) RemoveFollowAlertCommand(message twitch.PrivateMessage) string {
 	args := strings.Split(message.Message[19:], " ")
 
 	id, err := GetUserID(args[0])
@@ -76,7 +82,7 @@ func RemoveFollowAlertCommand(message twitch.PrivateMessage) string {
 	}
 }
 
-func GetFollowAlertsCommand() string {
+func (cmdHandler *CommandHandler) GetFollowAlertsCommand() string {
 	followWebhook, err := GetWebhooks()
 	if err != nil {
 		return "Error getting Followalerts"
@@ -97,8 +103,8 @@ func GetFollowAlertsCommand() string {
 	return payload
 }
 
-func PingCommand(message twitch.PrivateMessage) string {
-	uptime := time.Since(StartTime)
+func (cmdHandler *CommandHandler) PingCommand(message twitch.PrivateMessage) string {
+	uptime := time.Since(cmdHandler.botStartTime)
 	result := "Pong! Uptime: " + durafmt.Parse(uptime).LimitFirstN(2).String() + ","
 
 	api_uptime, err := GetApiUptime()
@@ -108,8 +114,8 @@ func PingCommand(message twitch.PrivateMessage) string {
 		result = result + " API-Uptime: " + api_uptime + ","
 	}
 
-	result = result + " Commit: " + Conf.Git.Commit + ","
-	result = result + " Branch: " + Conf.Git.Branch + ","
+	result = result + " Commit: " + cmdHandler.commit + ","
+	result = result + " Branch: " + cmdHandler.branch + ","
 
 	latency := GetLatency(message)
 	result = result + " Latency to tmi: " + latency
@@ -117,56 +123,56 @@ func PingCommand(message twitch.PrivateMessage) string {
 	return result
 }
 
-func RawMsgCommand(raw_message string) string {
+func (cmdHandler *CommandHandler) RawMsgCommand(raw_message string) string {
 	return UploadToHaste(raw_message)
 }
 
-func TmpJoinCommand(message twitch.PrivateMessage) string {
+func (cmdHandler *CommandHandler) TmpJoinCommand(message twitch.PrivateMessage, bot_channels *[]string, bot_client *twitch.Client) string {
 	if len(message.Message) < 9 {
 		return `No channel provided`
 	}
 	args := strings.Split(message.Message[9:], " ")
 	channel := args[0]
 
-	client.Join(channel)
-	Channels = append(Channels, channel)
+	bot_client.Join(channel)
+	*bot_channels = append(*bot_channels, channel)
 	return "Joined #" + channel
 }
 
-func TmpLeaveCommand(message twitch.PrivateMessage) string {
+func (cmdHandler *CommandHandler) TmpLeaveCommand(message twitch.PrivateMessage, bot_channels *[]string, bot_client *twitch.Client) string {
 	if len(message.Message) < 10 {
 		return `No channel provided`
 	}
 	args := strings.Split(message.Message[10:], " ")
 	channel := args[0]
 
-	client.Depart(channel)
+	bot_client.Depart(channel)
 
 	var index int
-	for i, c := range Channels {
+	for i, c := range *bot_channels {
 		if c == channel {
 			index = i
 		}
 	}
-	Channels = append(Channels[:index], Channels[index+1:]...)
+	*bot_channels = append((*bot_channels)[:index], (*bot_channels)[index+1:]...)
 
 	return "Left #" + channel
 }
 
-func GetChannelsCommand(message twitch.PrivateMessage) string {
+func (cmdHandler *CommandHandler) GetChannelsCommand(message twitch.PrivateMessage, bot_channels *[]string) string {
 	if message.Channel != "matthewde" && message.Channel != "gopherobot" {
 		return "Command not available in this channel to prevent pings"
 	}
 
 	var result string
-	for _, channel := range Channels {
+	for _, channel := range *bot_channels {
 		result = result + ", " + channel
 	}
 	result = "Joined Channels: [" + result[2:] + "]"
 	return result
 }
 
-func UrlEncodeCommand(message twitch.PrivateMessage) string {
+func (cmdHandler *CommandHandler) UrlEncodeCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 11 {
 		return "Nothing to encode"
 	}
@@ -174,7 +180,7 @@ func UrlEncodeCommand(message twitch.PrivateMessage) string {
 	return url.QueryEscape(content)
 }
 
-func UrlDecodeCommand(message twitch.PrivateMessage) string {
+func (cmdHandler *CommandHandler) UrlDecodeCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 11 {
 		return "Nothing to decode"
 	}
@@ -188,7 +194,7 @@ func UrlDecodeCommand(message twitch.PrivateMessage) string {
 	return result
 }
 
-func StreamInfoCommand(message twitch.PrivateMessage) string {
+func (cmdHandler *CommandHandler) StreamInfoCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 12 {
 		return "No channel given"
 	}
@@ -210,7 +216,7 @@ func StreamInfoCommand(message twitch.PrivateMessage) string {
 	return result
 }
 
-func HttpStatusCommand(message twitch.PrivateMessage) string {
+func (cmdHandler *CommandHandler) HttpStatusCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 12 {
 		return "No code provided"
 	}

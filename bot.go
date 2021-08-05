@@ -8,15 +8,20 @@ import (
 )
 
 type Bot struct {
-	config    Config
-	client    *twitch.Client
-	startTime time.Time
-	channels  []string
+	config     Config
+	client     *twitch.Client
+	cmdHandler CommandHandler
+	startTime  time.Time
+	channels   []string
 }
 
 func NewBot() *Bot {
 	bot := Bot{}
 	bot.config = GetConfig()
+	bot.cmdHandler = CommandHandler{
+		branch: bot.config.Git.Branch,
+		commit: bot.config.Git.Commit,
+	}
 
 	bot.client = twitch.NewClient("gopherobot", "oauth:"+bot.config.Twitch.Token)
 	return &bot
@@ -44,35 +49,35 @@ func (b *Bot) doCommand(message twitch.PrivateMessage) {
 	identifier := strings.Split(message.Message, " ")[0][1:]
 	switch identifier {
 	case "echo":
-		b.client.Say(message.Channel, EchoCommand(message))
+		b.client.Say(message.Channel, b.cmdHandler.EchoCommand(message))
 	case "id":
-		b.client.Say(message.Channel, UserIdCommand(message))
+		b.client.Say(message.Channel, b.cmdHandler.UserIdCommand(message))
 	case "user":
-		b.client.Say(message.Channel, UserCommand(message))
+		b.client.Say(message.Channel, b.cmdHandler.UserCommand(message))
 	case "addfollowalert":
-		b.client.Say(message.Channel, AddFollowAlertCommand(message))
+		b.client.Say(message.Channel, b.cmdHandler.AddFollowAlertCommand(message))
 	case "removefollowalert":
-		b.client.Say(message.Channel, RemoveFollowAlertCommand(message))
+		b.client.Say(message.Channel, b.cmdHandler.RemoveFollowAlertCommand(message))
 	case "getfollowalerts":
-		b.client.Say(message.Channel, GetFollowAlertsCommand())
+		b.client.Say(message.Channel, b.cmdHandler.GetFollowAlertsCommand())
 	case "ping":
-		b.client.Say(message.Channel, PingCommand(message))
+		b.client.Say(message.Channel, b.cmdHandler.PingCommand(message))
 	case "rawmsg":
-		b.client.Say(message.Channel, RawMsgCommand(message.Raw))
+		b.client.Say(message.Channel, b.cmdHandler.RawMsgCommand(message.Raw))
 	case "tmpjoin":
-		b.client.Say(message.Channel, TmpJoinCommand(message))
+		b.client.Say(message.Channel, b.cmdHandler.TmpJoinCommand(message, &b.channels, b.client))
 	case "tmpleave":
-		b.client.Say(message.Channel, TmpLeaveCommand(message))
+		b.client.Say(message.Channel, b.cmdHandler.TmpLeaveCommand(message, &b.channels, b.client))
 	case "getchannels":
-		b.client.Say(message.Channel, GetChannelsCommand(message))
+		b.client.Say(message.Channel, b.cmdHandler.GetChannelsCommand(message, &b.channels))
 	case "urlencode":
-		b.client.Say(message.Channel, UrlEncodeCommand(message))
+		b.client.Say(message.Channel, b.cmdHandler.UrlEncodeCommand(message))
 	case "urldecode":
-		b.client.Say(message.Channel, UrlDecodeCommand(message))
+		b.client.Say(message.Channel, b.cmdHandler.UrlDecodeCommand(message))
 	case "streaminfo":
-		b.client.Say(message.Channel, StreamInfoCommand(message))
+		b.client.Say(message.Channel, b.cmdHandler.StreamInfoCommand(message))
 	case "httpstatus":
-		b.client.Say(message.Channel, HttpStatusCommand(message))
+		b.client.Say(message.Channel, b.cmdHandler.HttpStatusCommand(message))
 	}
 }
 
