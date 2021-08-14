@@ -224,6 +224,17 @@ func HttpStatusCommand(message twitch.PrivateMessage) string {
 	return result
 }
 
+func NextLaunchCommand(message twitch.PrivateMessage) string {
+	nextLaunch, err := GetNextLaunch()
+	if err != nil {
+		return err.Error()
+	}
+	result := nextLaunch.DateUtc.String() + " (UTC) | "
+	result += "Name: " + nextLaunch.Name + " | "
+	result += "Details: " + nextLaunch.Details
+	return result
+}
+
 func RevokeAuthCommand(message twitch.WhisperMessage) string {
 	if len(message.Message) < 8 {
 		return "No auth provided"
