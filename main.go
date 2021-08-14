@@ -72,6 +72,8 @@ func doWhisperCommand(message twitch.WhisperMessage) {
 	switch identifier {
 	case "saveclip":
 		SaveClipCommand(message)
+	case "revoke":
+		client.Say("gopherobot", RevokeAuthCommand(message))
 	}
 }
 
