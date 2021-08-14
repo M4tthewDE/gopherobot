@@ -223,3 +223,15 @@ func HttpStatusCommand(message twitch.PrivateMessage) string {
 	result := http.StatusText(code)
 	return result
 }
+
+func RevokeAuthCommand(message twitch.WhisperMessage) string {
+	if len(message.Message) < 8 {
+		return "No auth provided"
+	}
+	args := strings.Split(message.Message[8:], " ")
+	err := RevokeAuth(args[0])
+	if err != nil {
+		return err.Error()
+	}
+	return "Success!"
+}

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+
 	"github.com/nicklaw5/helix"
 )
 
@@ -53,4 +55,23 @@ func GetStreamInfo(user string) (*helix.StreamsResponse, error) {
 		return nil, err
 	}
 	return resp, nil
+}
+
+func RevokeAuth(auth string) error {
+	client, err := helix.NewClient(&helix.Options{
+		ClientID:        Conf.Twitch.Client_ID,
+		UserAccessToken: Conf.Twitch.Token,
+	})
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.RevokeUserAccessToken(auth)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != 200 {
+		return errors.New(resp.ErrorMessage)
+	}
+	return nil
 }
