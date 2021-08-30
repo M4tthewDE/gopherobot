@@ -231,6 +231,13 @@ func NextLaunchCommand(message twitch.PrivateMessage) string {
 	}
 	result := nextLaunch.DateUtc.String() + " (UTC) | "
 	result += "Name: " + nextLaunch.Name + " | "
+
+	if (len(result + "Details: " + nextLaunch.Details) > 500) {
+		remaining := 500 - len(result) - len("Details: ") -3
+		result += "Details: " + nextLaunch.Details[:remaining] + "..."
+		return result
+	}
+
 	result += "Details: " + nextLaunch.Details
 	return result
 }
