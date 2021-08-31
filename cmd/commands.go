@@ -1,28 +1,56 @@
-package main
+package cmd
 
 import (
 	"log"
 	"net/http"
 	"net/url"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
 
+	"de.com.fdm/gopherobot/config"
+	"de.com.fdm/gopherobot/provider"
+	"de.com.fdm/gopherobot/util"
 	"github.com/gempir/go-twitch-irc/v2"
 	"github.com/hako/durafmt"
 )
 
-func EchoCommand(message twitch.PrivateMessage) string {
+type CommandHandler struct {
+	config         *config.Config
+	twitchProvider *provider.TwitchProvider
+	hasteProvider  *provider.HasteProvider
+	fdmProvider    *provider.FeelsdankmanProvider
+	spaceXProvider *provider.SpaceXProvider
+	startTime      time.Time
+	client         *twitch.Client
+	channels       []string
+}
+
+func NewCommandHandler(config *config.Config, startTime time.Time, client *twitch.Client) *CommandHandler {
+	cmdHandler := CommandHandler{
+		twitchProvider: &provider.TwitchProvider{Config: config},
+		hasteProvider:  &provider.HasteProvider{Config: config},
+		fdmProvider:    &provider.FeelsdankmanProvider{Config: config},
+		spaceXProvider: &provider.SpaceXProvider{},
+		startTime:      startTime,
+		client:         client,
+	}
+
+	return &cmdHandler
+}
+
+func (c *CommandHandler) EchoCommand(message twitch.PrivateMessage) string {
 	return message.Message[6:]
 }
 
-func UserIdCommand(message twitch.PrivateMessage) string {
+func (c *CommandHandler) UserIdCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 4 {
 		return `No user provided`
 	}
 	args := strings.Split(message.Message[4:], " ")
 
-	id, err := GetUserID(args[0])
+	id, err := c.twitchProvider.GetUserID(args[0])
 	if err != nil {
 		return `Couldn't find User-ID for "` + args[0] + `"`
 	} else {
@@ -30,7 +58,7 @@ func UserIdCommand(message twitch.PrivateMessage) string {
 	}
 }
 
-func UserCommand(message twitch.PrivateMessage) string {
+func (c *CommandHandler) UserCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 6 {
 		return `No ID provided`
 	}
@@ -38,7 +66,7 @@ func UserCommand(message twitch.PrivateMessage) string {
 
 	id := args[0]
 
-	user, err := GetUser(id)
+	user, err := c.twitchProvider.GetUser(id)
 	if err != nil {
 		return `Couldn't find User for "` + args[0] + `"`
 	} else {
@@ -46,14 +74,14 @@ func UserCommand(message twitch.PrivateMessage) string {
 	}
 }
 
-func AddFollowAlertCommand(message twitch.PrivateMessage) string {
+func (c *CommandHandler) AddFollowAlertCommand(message twitch.PrivateMessage) string {
 	args := strings.Split(message.Message[16:], " ")
 
-	id, err := GetUserID(args[0])
+	id, err := c.twitchProvider.GetUserID(args[0])
 	if err != nil {
 		return `Couldn't find User-ID for "` + args[0] + `"`
 	} else {
-		err = RegisterWebhook(id, message.Channel, message.User.Name)
+		err = c.fdmProvider.RegisterWebhook(id, message.Channel, message.User.Name)
 		if err != nil {
 			return "Error adding follow alert!"
 		}
@@ -61,14 +89,14 @@ func AddFollowAlertCommand(message twitch.PrivateMessage) string {
 	}
 }
 
-func RemoveFollowAlertCommand(message twitch.PrivateMessage) string {
+func (c *CommandHandler) RemoveFollowAlertCommand(message twitch.PrivateMessage) string {
 	args := strings.Split(message.Message[19:], " ")
 
-	id, err := GetUserID(args[0])
+	id, err := c.twitchProvider.GetUserID(args[0])
 	if err != nil {
 		return `Couldn't find User-ID for "` + args[0] + `"`
 	} else {
-		err = RemoveWebhook(id, message.User.Name, message.Channel)
+		err = c.fdmProvider.RemoveWebhook(id, message.User.Name, message.Channel)
 		if err != nil {
 			return "Error removing follow alert!"
 		}
@@ -76,8 +104,8 @@ func RemoveFollowAlertCommand(message twitch.PrivateMessage) string {
 	}
 }
 
-func GetFollowAlertsCommand() string {
-	followWebhook, err := GetWebhooks()
+func (c *CommandHandler) GetFollowAlertsCommand() string {
+	followWebhook, err := c.fdmProvider.GetWebhooks()
 	if err != nil {
 		return "Error getting Followalerts"
 	}
@@ -86,7 +114,7 @@ func GetFollowAlertsCommand() string {
 	var users []string
 	for _, webhook := range followWebhook.Data {
 		id := webhook.Condition.BroadcasterUserID
-		user, _ := GetUser(id)
+		user, _ := c.twitchProvider.GetUser(id)
 		users = append(users, user)
 	}
 
@@ -97,76 +125,76 @@ func GetFollowAlertsCommand() string {
 	return payload
 }
 
-func PingCommand(message twitch.PrivateMessage) string {
-	uptime := time.Since(StartTime)
+func (c *CommandHandler) PingCommand(message twitch.PrivateMessage) string {
+	uptime := time.Since(c.startTime)
 	result := "Pong! Uptime: " + durafmt.Parse(uptime).LimitFirstN(2).String() + ","
 
-	api_uptime, err := GetApiUptime()
+	api_uptime, err := c.fdmProvider.GetApiUptime()
 	if err != nil {
 		result = result + " API-Uptime: Unavailable monkaS"
 	} else {
 		result = result + " API-Uptime: " + api_uptime + ","
 	}
 
-	result = result + " Commit: " + Conf.Git.Commit + ","
-	result = result + " Branch: " + Conf.Git.Branch + ","
+	result = result + " Commit: " + c.config.Git.Commit + ","
+	result = result + " Branch: " + c.config.Git.Branch + ","
 
-	latency := GetLatency(message)
+	latency := util.GetLatency(message)
 	result = result + " Latency to tmi: " + latency
 
 	return result
 }
 
-func RawMsgCommand(raw_message string) string {
-	return UploadToHaste(raw_message)
+func (c *CommandHandler) RawMsgCommand(raw_message string) string {
+	return c.hasteProvider.UploadToHaste(raw_message)
 }
 
-func TmpJoinCommand(message twitch.PrivateMessage) string {
+func (c *CommandHandler) TmpJoinCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 9 {
 		return `No channel provided`
 	}
 	args := strings.Split(message.Message[9:], " ")
 	channel := args[0]
 
-	client.Join(channel)
-	Channels = append(Channels, channel)
+	c.client.Join(channel)
+	c.channels = append(c.channels, channel)
 	return "Joined #" + channel
 }
 
-func TmpLeaveCommand(message twitch.PrivateMessage) string {
+func (c *CommandHandler) TmpLeaveCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 10 {
 		return `No channel provided`
 	}
 	args := strings.Split(message.Message[10:], " ")
 	channel := args[0]
 
-	client.Depart(channel)
+	c.client.Depart(channel)
 
 	var index int
-	for i, c := range Channels {
+	for i, c := range c.channels {
 		if c == channel {
 			index = i
 		}
 	}
-	Channels = append(Channels[:index], Channels[index+1:]...)
+	c.channels = append(c.channels[:index], c.channels[index+1:]...)
 
 	return "Left #" + channel
 }
 
-func GetChannelsCommand(message twitch.PrivateMessage) string {
+func (c *CommandHandler) GetChannelsCommand(message twitch.PrivateMessage) string {
 	if message.Channel != "matthewde" && message.Channel != "gopherobot" {
 		return "Command not available in this channel to prevent pings"
 	}
 
 	var result string
-	for _, channel := range Channels {
+	for _, channel := range c.channels {
 		result = result + ", " + channel
 	}
 	result = "Joined Channels: [" + result[2:] + "]"
 	return result
 }
 
-func UrlEncodeCommand(message twitch.PrivateMessage) string {
+func (c *CommandHandler) UrlEncodeCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 11 {
 		return "Nothing to encode"
 	}
@@ -174,7 +202,7 @@ func UrlEncodeCommand(message twitch.PrivateMessage) string {
 	return url.QueryEscape(content)
 }
 
-func UrlDecodeCommand(message twitch.PrivateMessage) string {
+func (c *CommandHandler) UrlDecodeCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 11 {
 		return "Nothing to decode"
 	}
@@ -188,14 +216,14 @@ func UrlDecodeCommand(message twitch.PrivateMessage) string {
 	return result
 }
 
-func StreamInfoCommand(message twitch.PrivateMessage) string {
+func (c *CommandHandler) StreamInfoCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 12 {
 		return "No channel given"
 	}
 	args := strings.Split(message.Message[12:], " ")
 	channel := args[0]
 
-	resp, err := GetStreamInfo(channel)
+	resp, err := c.twitchProvider.GetStreamInfo(channel)
 	if err != nil {
 		log.Println(err)
 	}
@@ -210,7 +238,7 @@ func StreamInfoCommand(message twitch.PrivateMessage) string {
 	return result
 }
 
-func HttpStatusCommand(message twitch.PrivateMessage) string {
+func (c *CommandHandler) HttpStatusCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 12 {
 		return "No code provided"
 	}
@@ -224,8 +252,8 @@ func HttpStatusCommand(message twitch.PrivateMessage) string {
 	return result
 }
 
-func NextLaunchCommand(message twitch.PrivateMessage) string {
-	nextLaunch, err := GetNextLaunch()
+func (c *CommandHandler) NextLaunchCommand(message twitch.PrivateMessage) string {
+	nextLaunch, err := c.spaceXProvider.GetNextLaunch()
 	if err != nil {
 		return err.Error()
 	}
@@ -235,14 +263,25 @@ func NextLaunchCommand(message twitch.PrivateMessage) string {
 	return result
 }
 
-func RevokeAuthCommand(message twitch.WhisperMessage) string {
+func (c *CommandHandler) RevokeAuthCommand(message twitch.WhisperMessage) string {
 	if len(message.Message) < 8 {
 		return "No auth provided"
 	}
 	args := strings.Split(message.Message[8:], " ")
-	err := RevokeAuth(args[0])
+	err := c.twitchProvider.RevokeAuth(args[0])
 	if err != nil {
 		return err.Error()
 	}
 	return "Success!"
+}
+
+func (c *CommandHandler) SaveClipCommand(message twitch.WhisperMessage) {
+	clip_url := strings.Split(message.Message[4:], " ")[1]
+
+	cmd := exec.Command("youtube-dl", "-o", "../data/%(title)s.%(ext)s", clip_url)
+
+	err := cmd.Run()
+	if err != nil {
+		log.Println(err)
+	}
 }

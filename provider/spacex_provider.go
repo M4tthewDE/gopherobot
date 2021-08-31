@@ -1,4 +1,4 @@
-package main
+package provider
 
 import (
 	"encoding/json"
@@ -7,7 +7,10 @@ import (
 	"time"
 )
 
-func GetNextLaunch() (NextLaunch, error) {
+type SpaceXProvider struct {
+}
+
+func (s *SpaceXProvider) GetNextLaunch() (NextLaunch, error) {
 	httpClient := &http.Client{}
 
 	req, err := http.NewRequest("GET", "https://api.spacexdata.com/v5/launches/next", nil)

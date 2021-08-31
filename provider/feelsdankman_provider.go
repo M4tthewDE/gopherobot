@@ -1,4 +1,4 @@
-package main
+package provider
 
 import (
 	"encoding/json"
@@ -7,10 +7,16 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"de.com.fdm/gopherobot/config"
 )
 
-func RegisterWebhook(id string, channel string, name string) error {
-	url := "https://" + Conf.Api.Host + "/webhook/register?type=follow&id=" + id + "&user=" + name + "&channel=" + channel
+type FeelsdankmanProvider struct {
+	Config *config.Config
+}
+
+func (f *FeelsdankmanProvider) RegisterWebhook(id string, channel string, name string) error {
+	url := "https://" + f.Config.Api.Host + "/webhook/register?type=follow&id=" + id + "&user=" + name + "&channel=" + channel
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -18,8 +24,8 @@ func RegisterWebhook(id string, channel string, name string) error {
 		return err
 	}
 
-	user := Conf.Api.User
-	pass := Conf.Api.Pass
+	user := f.Config.Api.User
+	pass := f.Config.Api.Pass
 	req.SetBasicAuth(user, pass)
 
 	r, err := client.Do(req)
@@ -34,9 +40,9 @@ func RegisterWebhook(id string, channel string, name string) error {
 	return nil
 }
 
-func RemoveWebhook(id string, username string, channel string) error {
+func (f *FeelsdankmanProvider) RemoveWebhook(id string, username string, channel string) error {
 	broadcaster_id := id
-	url := "https://" + Conf.Api.Host + "/webhook/twitch/setup/delete?broadcaster=" + broadcaster_id + "&user=" + username + "&channel=" + channel
+	url := "https://" + f.Config.Api.Host + "/webhook/twitch/setup/delete?broadcaster=" + broadcaster_id + "&user=" + username + "&channel=" + channel
 	client := &http.Client{}
 
 	req, err := http.NewRequest("DELETE", url, nil)
@@ -44,8 +50,8 @@ func RemoveWebhook(id string, username string, channel string) error {
 		return err
 	}
 
-	user := Conf.Api.User
-	pass := Conf.Api.Pass
+	user := f.Config.Api.User
+	pass := f.Config.Api.Pass
 	req.SetBasicAuth(user, pass)
 
 	r, err := client.Do(req)
@@ -60,8 +66,8 @@ func RemoveWebhook(id string, username string, channel string) error {
 	return nil
 }
 
-func GetWebhooks() (FollowWebhook, error) {
-	url := "https://" + Conf.Api.Host + "/webhook/twitch/setup/subscriptions"
+func (f *FeelsdankmanProvider) GetWebhooks() (FollowWebhook, error) {
+	url := "https://" + f.Config.Api.Host + "/webhook/twitch/setup/subscriptions"
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -69,8 +75,8 @@ func GetWebhooks() (FollowWebhook, error) {
 		return FollowWebhook{}, err
 	}
 
-	user := Conf.Api.User
-	pass := Conf.Api.Pass
+	user := f.Config.Api.User
+	pass := f.Config.Api.Pass
 	req.SetBasicAuth(user, pass)
 
 	r, err := client.Do(req)
@@ -96,8 +102,8 @@ func GetWebhooks() (FollowWebhook, error) {
 	return followWebhook, nil
 }
 
-func GetApiUptime() (string, error) {
-	url := "https://" + Conf.Api.Host + "/webhook/twitch/setup/uptime"
+func (f *FeelsdankmanProvider) GetApiUptime() (string, error) {
+	url := "https://" + f.Config.Api.Host + "/webhook/twitch/setup/uptime"
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -105,8 +111,8 @@ func GetApiUptime() (string, error) {
 		return "", err
 	}
 
-	user := Conf.Api.User
-	pass := Conf.Api.Pass
+	user := f.Config.Api.User
+	pass := f.Config.Api.Pass
 	req.SetBasicAuth(user, pass)
 
 	r, err := client.Do(req)

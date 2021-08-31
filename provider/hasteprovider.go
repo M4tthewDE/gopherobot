@@ -1,4 +1,4 @@
-package main
+package provider
 
 import (
 	"bytes"
@@ -7,10 +7,16 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"de.com.fdm/gopherobot/config"
 )
 
+type HasteProvider struct {
+	Config *config.Config
+}
+
 // inspired by https://github.com/zneix/haste-client/blob/master/main.go 🐍
-func UploadToHaste(data string) string {
+func (h *HasteProvider) UploadToHaste(data string) string {
 
 	type HasteResponseData struct {
 		Key string `json:"key,omitempty"`
@@ -18,7 +24,7 @@ func UploadToHaste(data string) string {
 
 	httpClient := &http.Client{}
 
-	req, err := http.NewRequest("POST", Conf.Haste.Url+"/documents", bytes.NewBuffer([]byte(data)))
+	req, err := http.NewRequest("POST", h.Config.Haste.Url+"/documents", bytes.NewBuffer([]byte(data)))
 	if err != nil {
 		log.Println("New Request error: " + err.Error())
 		return ""
@@ -50,7 +56,7 @@ func UploadToHaste(data string) string {
 		return ""
 	}
 
-	var finalURL = Conf.Haste.Url
+	var finalURL = h.Config.Haste.Url
 	finalURL += "/raw/" + jsonResponse.Key
 
 	return finalURL
