@@ -1,9 +1,6 @@
 package bot
 
 import (
-	"log"
-	"net"
-	"net/rpc"
 	"strings"
 	"time"
 
@@ -35,8 +32,6 @@ func (b *Bot) Run() {
 
 	b.client.Join(b.config.Bot.Channels...)
 	b.channels = append(b.channels, b.config.Bot.Channels...)
-
-	go b.remoteMessageHandler(b.client)
 
 	err := b.client.Connect()
 	if err != nil {
@@ -107,35 +102,4 @@ func (b *Bot) doCommand(message twitch.PrivateMessage) {
 	case "nextlaunch":
 		b.client.Say(message.Channel, b.cmdHandler.NextLaunchCommand(message))
 	}
-}
-
-func (b *Bot) remoteMessageHandler(client *twitch.Client) {
-	addy, err := net.ResolveTCPAddr("tcp", "0.0.0.0:42586")
-	if err != nil {
-		log.Println(err)
-	}
-
-	inbound, err := net.ListenTCP("tcp", addy)
-	if err != nil {
-		log.Println(err)
-	}
-
-	messageHandler := MessageHandler{b}
-	err = rpc.Register(messageHandler)
-	if err != nil {
-		log.Println(err)
-	}
-	rpc.Accept(inbound)
-}
-
-type MessageHandler struct {
-	bot *Bot
-}
-
-func (m *MessageHandler) SendMessage(content string, ack *bool) error {
-	channel := strings.Split(content, " ")[0]
-	message := content[len(channel):]
-
-	m.bot.client.Say(channel, message)
-	return nil
 }
