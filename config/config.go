@@ -13,25 +13,30 @@ func GetConfig() *Config {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer f.Close()
+
+	decoder := yaml.NewDecoder(f)
 
 	var config Config
-	decoder := yaml.NewDecoder(f)
+
 	err = decoder.Decode(&config)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	f.Close()
+
 	branch, err := util.GetBranch()
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	config.Git.Branch = branch
 
 	commit, err := util.GetCommit()
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	config.Git.Commit = commit
 
 	return &config
@@ -42,17 +47,17 @@ type Config struct {
 		Channels []string `yaml:"channels,flow"`
 		Prefix   string   `yaml:"prefix"`
 	} `yaml:"bot"`
-	Api struct {
+	API struct {
 		Host string `yaml:"host"`
 		User string `yaml:"user"`
 		Pass string `yaml:"pass"`
 	} `yaml:"api"`
 	Twitch struct {
-		Token     string `yaml:"token"`
-		Client_ID string `yaml:"client_id"`
+		Token    string `yaml:"token"`
+		ClientID string `yaml:"clientId"`
 	} `yaml:"twitch"`
 	Haste struct {
-		Url string `yaml:"url"`
+		URL string `yaml:"url"`
 	} `yaml:"haste"`
 	Git struct {
 		Branch string

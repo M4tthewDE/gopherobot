@@ -13,7 +13,7 @@ type TwitchProvider struct {
 
 func (t *TwitchProvider) GetUserID(user string) (string, error) {
 	client, err := helix.NewClient(&helix.Options{
-		ClientID:        t.Config.Twitch.Client_ID,
+		ClientID:        t.Config.Twitch.ClientID,
 		UserAccessToken: t.Config.Twitch.Token,
 	})
 	if err != nil {
@@ -30,7 +30,7 @@ func (t *TwitchProvider) GetUserID(user string) (string, error) {
 
 func (t *TwitchProvider) GetUser(id string) (string, error) {
 	client, err := helix.NewClient(&helix.Options{
-		ClientID:        t.Config.Twitch.Client_ID,
+		ClientID:        t.Config.Twitch.ClientID,
 		UserAccessToken: t.Config.Twitch.Token,
 	})
 	if err != nil {
@@ -47,7 +47,7 @@ func (t *TwitchProvider) GetUser(id string) (string, error) {
 
 func (t *TwitchProvider) GetStreamInfo(user string) (*helix.StreamsResponse, error) {
 	client, err := helix.NewClient(&helix.Options{
-		ClientID:        t.Config.Twitch.Client_ID,
+		ClientID:        t.Config.Twitch.ClientID,
 		UserAccessToken: t.Config.Twitch.Token,
 	})
 	if err != nil {
@@ -64,7 +64,7 @@ func (t *TwitchProvider) GetStreamInfo(user string) (*helix.StreamsResponse, err
 
 func (t *TwitchProvider) RevokeAuth(auth string) error {
 	client, err := helix.NewClient(&helix.Options{
-		ClientID:        t.Config.Twitch.Client_ID,
+		ClientID:        t.Config.Twitch.ClientID,
 		UserAccessToken: t.Config.Twitch.Token,
 	})
 	if err != nil {

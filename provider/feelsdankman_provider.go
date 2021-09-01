@@ -16,7 +16,7 @@ type FeelsdankmanProvider struct {
 }
 
 func (f *FeelsdankmanProvider) RegisterWebhook(id string, channel string, name string) error {
-	url := "https://" + f.Config.Api.Host + "/webhook/register?type=follow&id=" + id + "&user=" + name + "&channel=" + channel
+	url := "https://" + f.Config.API.Host + "/webhook/register?type=follow&id=" + id + "&user=" + name + "&channel=" + channel
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -24,8 +24,8 @@ func (f *FeelsdankmanProvider) RegisterWebhook(id string, channel string, name s
 		return err
 	}
 
-	user := f.Config.Api.User
-	pass := f.Config.Api.Pass
+	user := f.Config.API.User
+	pass := f.Config.API.Pass
 	req.SetBasicAuth(user, pass)
 
 	r, err := client.Do(req)
@@ -42,7 +42,7 @@ func (f *FeelsdankmanProvider) RegisterWebhook(id string, channel string, name s
 
 func (f *FeelsdankmanProvider) RemoveWebhook(id string, username string, channel string) error {
 	broadcaster_id := id
-	url := "https://" + f.Config.Api.Host + "/webhook/twitch/setup/delete?broadcaster=" + broadcaster_id + "&user=" + username + "&channel=" + channel
+	url := "https://" + f.Config.API.Host + "/webhook/twitch/setup/delete?broadcaster=" + broadcaster_id + "&user=" + username + "&channel=" + channel
 	client := &http.Client{}
 
 	req, err := http.NewRequest("DELETE", url, nil)
@@ -50,8 +50,8 @@ func (f *FeelsdankmanProvider) RemoveWebhook(id string, username string, channel
 		return err
 	}
 
-	user := f.Config.Api.User
-	pass := f.Config.Api.Pass
+	user := f.Config.API.User
+	pass := f.Config.API.Pass
 	req.SetBasicAuth(user, pass)
 
 	r, err := client.Do(req)
@@ -67,7 +67,7 @@ func (f *FeelsdankmanProvider) RemoveWebhook(id string, username string, channel
 }
 
 func (f *FeelsdankmanProvider) GetWebhooks() (FollowWebhook, error) {
-	url := "https://" + f.Config.Api.Host + "/webhook/twitch/setup/subscriptions"
+	url := "https://" + f.Config.API.Host + "/webhook/twitch/setup/subscriptions"
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -75,8 +75,8 @@ func (f *FeelsdankmanProvider) GetWebhooks() (FollowWebhook, error) {
 		return FollowWebhook{}, err
 	}
 
-	user := f.Config.Api.User
-	pass := f.Config.Api.Pass
+	user := f.Config.API.User
+	pass := f.Config.API.Pass
 	req.SetBasicAuth(user, pass)
 
 	r, err := client.Do(req)
@@ -103,7 +103,7 @@ func (f *FeelsdankmanProvider) GetWebhooks() (FollowWebhook, error) {
 }
 
 func (f *FeelsdankmanProvider) GetApiUptime() (string, error) {
-	url := "https://" + f.Config.Api.Host + "/webhook/twitch/setup/uptime"
+	url := "https://" + f.Config.API.Host + "/webhook/twitch/setup/uptime"
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -111,8 +111,8 @@ func (f *FeelsdankmanProvider) GetApiUptime() (string, error) {
 		return "", err
 	}
 
-	user := f.Config.Api.User
-	pass := f.Config.Api.Pass
+	user := f.Config.API.User
+	pass := f.Config.API.Pass
 	req.SetBasicAuth(user, pass)
 
 	r, err := client.Do(req)

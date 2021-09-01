@@ -24,7 +24,7 @@ func (h *HasteProvider) UploadToHaste(data string) string {
 
 	httpClient := &http.Client{}
 
-	req, err := http.NewRequest("POST", h.Config.Haste.Url+"/documents", bytes.NewBuffer([]byte(data)))
+	req, err := http.NewRequest("POST", h.Config.Haste.URL+"/documents", bytes.NewBuffer([]byte(data)))
 	if err != nil {
 		log.Println("New Request error: " + err.Error())
 		return ""
@@ -56,7 +56,7 @@ func (h *HasteProvider) UploadToHaste(data string) string {
 		return ""
 	}
 
-	var finalURL = h.Config.Haste.Url
+	var finalURL = h.Config.Haste.URL
 	finalURL += "/raw/" + jsonResponse.Key
 
 	return finalURL
