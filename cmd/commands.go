@@ -29,6 +29,7 @@ type CommandHandler struct {
 
 func NewCommandHandler(config *config.Config, startTime time.Time, client *twitch.Client) *CommandHandler {
 	cmdHandler := CommandHandler{
+		config:         config,
 		twitchProvider: &provider.TwitchProvider{Config: config},
 		hasteProvider:  &provider.HasteProvider{Config: config},
 		fdmProvider:    &provider.FeelsdankmanProvider{Config: config},
