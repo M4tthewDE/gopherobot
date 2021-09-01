@@ -1,7 +1,7 @@
 package provider
 
 import (
-	"errors"
+	"fmt"
 
 	"de.com.fdm/gopherobot/config"
 	"github.com/nicklaw5/helix"
@@ -17,14 +17,16 @@ func (t *TwitchProvider) GetUserID(user string) (string, error) {
 		UserAccessToken: t.Config.Twitch.Token,
 	})
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error getting user id: %w", err)
 	}
+
 	resp, err := client.GetUsers(&helix.UsersParams{
 		Logins: []string{user},
 	})
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error getting user id: %w", err)
 	}
+
 	return resp.Data.Users[0].ID, nil
 }
 
@@ -34,14 +36,16 @@ func (t *TwitchProvider) GetUser(id string) (string, error) {
 		UserAccessToken: t.Config.Twitch.Token,
 	})
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error getting user: %w", err)
 	}
+
 	resp, err := client.GetUsers(&helix.UsersParams{
 		IDs: []string{id},
 	})
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error getting user: %w", err)
 	}
+
 	return resp.Data.Users[0].Login, nil
 }
 
@@ -51,14 +55,16 @@ func (t *TwitchProvider) GetStreamInfo(user string) (*helix.StreamsResponse, err
 		UserAccessToken: t.Config.Twitch.Token,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting stream: %w", err)
 	}
+
 	resp, err := client.GetStreams(&helix.StreamsParams{
 		UserLogins: []string{user},
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting stream: %w", err)
 	}
+
 	return resp, nil
 }
 
@@ -68,15 +74,13 @@ func (t *TwitchProvider) RevokeAuth(auth string) error {
 		UserAccessToken: t.Config.Twitch.Token,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("error revoking auth: %w", err)
 	}
 
-	resp, err := client.RevokeUserAccessToken(auth)
+	_, err = client.RevokeUserAccessToken(auth)
 	if err != nil {
-		return err
+		return fmt.Errorf("error revoking auth: %w", err)
 	}
-	if resp.StatusCode != 200 {
-		return errors.New(resp.ErrorMessage)
-	}
+
 	return nil
 }
