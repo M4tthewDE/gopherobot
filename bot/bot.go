@@ -33,11 +33,9 @@ func (b *Bot) Run() {
 	b.client.Join(b.config.Bot.Channels...)
 	b.channels = append(b.channels, b.config.Bot.Channels...)
 
-	err := b.client.Connect()
-	if err != nil {
+	if err := b.client.Connect(); err != nil {
 		panic(err)
 	}
-
 }
 
 func (b *Bot) onWhisper(message twitch.WhisperMessage) {
