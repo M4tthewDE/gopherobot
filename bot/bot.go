@@ -70,7 +70,7 @@ func (b *Bot) doCommand(message twitch.PrivateMessage) {
 	case "echo":
 		b.client.Say(message.Channel, b.cmdHandler.EchoCommand(message))
 	case "id":
-		b.client.Say(message.Channel, b.cmdHandler.UserIdCommand(message))
+		b.client.Say(message.Channel, b.cmdHandler.UserIDCommand(message))
 	case "user":
 		b.client.Say(message.Channel, b.cmdHandler.UserCommand(message))
 	case "addfollowalert":
@@ -90,13 +90,13 @@ func (b *Bot) doCommand(message twitch.PrivateMessage) {
 	case "getchannels":
 		b.client.Say(message.Channel, b.cmdHandler.GetChannelsCommand(message))
 	case "urlencode":
-		b.client.Say(message.Channel, b.cmdHandler.UrlEncodeCommand(message))
+		b.client.Say(message.Channel, b.cmdHandler.URLEncodeCommand(message))
 	case "urldecode":
-		b.client.Say(message.Channel, b.cmdHandler.UrlDecodeCommand(message))
+		b.client.Say(message.Channel, b.cmdHandler.URLDecodeCommand(message))
 	case "streaminfo":
 		b.client.Say(message.Channel, b.cmdHandler.StreamInfoCommand(message))
 	case "httpstatus":
-		b.client.Say(message.Channel, b.cmdHandler.HttpStatusCommand(message))
+		b.client.Say(message.Channel, b.cmdHandler.HTTPStatusCommand(message))
 	case "nextlaunch":
 		b.client.Say(message.Channel, b.cmdHandler.NextLaunchCommand(message))
 	}
