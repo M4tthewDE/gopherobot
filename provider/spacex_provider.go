@@ -1,37 +1,45 @@
-package main
+package provider
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"time"
 )
 
-func GetNextLaunch() (NextLaunch, error) {
+type SpaceXProvider struct{}
+
+func (s *SpaceXProvider) GetNextLaunch() (NextLaunch, error) {
 	httpClient := &http.Client{}
 
-	req, err := http.NewRequest("GET", "https://api.spacexdata.com/v5/launches/next", nil)
+	ctx := context.Background()
+
+	req, err := http.NewRequestWithContext(ctx, "GET", "https://api.spacexdata.com/v5/launches/next", nil)
 	if err != nil {
-		return NextLaunch{}, err
+		return NextLaunch{}, fmt.Errorf("error getting next launch: %w", err)
 	}
 
-	//send the request
+	// send the request
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		return NextLaunch{}, err
+		return NextLaunch{}, fmt.Errorf("error getting next launch: %w", err)
 	}
 	defer resp.Body.Close()
 
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return NextLaunch{}, err
+		return NextLaunch{}, fmt.Errorf("error getting next launch: %w", err)
 	}
 
 	var nextLaunch NextLaunch
+
 	err = json.Unmarshal(data, &nextLaunch)
 	if err != nil {
-		return NextLaunch{}, err
+		return NextLaunch{}, fmt.Errorf("error getting next launch: %w", err)
 	}
+
 	return nextLaunch, nil
 }
 
