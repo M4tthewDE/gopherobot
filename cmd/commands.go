@@ -131,7 +131,7 @@ func (c *CommandHandler) PingCommand(message twitch.PrivateMessage) string {
 	uptime := time.Since(c.startTime)
 	result := "Pong! Uptime: " + durafmt.Parse(uptime).LimitFirstN(2).String() + ","
 
-	api_uptime, err := c.fdmProvider.GetApiUptime()
+	api_uptime, err := c.fdmProvider.GetAPIUptime()
 	if err != nil {
 		result = result + " API-Uptime: Unavailable monkaS"
 	} else {

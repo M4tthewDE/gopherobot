@@ -1,27 +1,33 @@
 package provider
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 	"time"
 
 	"de.com.fdm/gopherobot/config"
 )
+
+var errBadStatus = errors.New("request returned bad statuscode")
 
 type FeelsdankmanProvider struct {
 	Config *config.Config
 }
 
 func (f *FeelsdankmanProvider) RegisterWebhook(id string, channel string, name string) error {
-	url := "https://" + f.Config.API.Host + "/webhook/register?type=follow&id=" + id + "&user=" + name + "&channel=" + channel
+	url := "https://" + f.Config.API.Host
+	url += "/webhook/register?type=follow&id=" + id + "&user=" + name + "&channel=" + channel
 	client := &http.Client{}
 
-	req, err := http.NewRequest("GET", url, nil)
+	ctx := context.Background()
+
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("error registering webhook: %w", err)
 	}
 
 	user := f.Config.API.User
@@ -30,24 +36,28 @@ func (f *FeelsdankmanProvider) RegisterWebhook(id string, channel string, name s
 
 	r, err := client.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("error registering webhook: %w", err)
 	}
 	defer r.Body.Close()
 
-	if r.StatusCode != 200 {
-		return errors.New(strconv.Itoa(r.StatusCode))
+	if r.StatusCode != http.StatusOK {
+		return errBadStatus
 	}
+
 	return nil
 }
 
 func (f *FeelsdankmanProvider) RemoveWebhook(id string, username string, channel string) error {
-	broadcaster_id := id
-	url := "https://" + f.Config.API.Host + "/webhook/twitch/setup/delete?broadcaster=" + broadcaster_id + "&user=" + username + "&channel=" + channel
+	broadcasterID := id
+	url := "https://" + f.Config.API.Host
+	url += "/webhook/twitch/setup/delete?broadcaster=" + broadcasterID + "&user=" + username + "&channel=" + channel
 	client := &http.Client{}
 
-	req, err := http.NewRequest("DELETE", url, nil)
+	ctx := context.Background()
+
+	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("error removing webhook: %w", err)
 	}
 
 	user := f.Config.API.User
@@ -56,13 +66,14 @@ func (f *FeelsdankmanProvider) RemoveWebhook(id string, username string, channel
 
 	r, err := client.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("error removing webhook: %w", err)
 	}
 	defer r.Body.Close()
 
-	if r.StatusCode != 200 {
-		return errors.New(strconv.Itoa(r.StatusCode))
+	if r.StatusCode != http.StatusOK {
+		return errBadStatus
 	}
+
 	return nil
 }
 
@@ -70,9 +81,11 @@ func (f *FeelsdankmanProvider) GetWebhooks() (FollowWebhook, error) {
 	url := "https://" + f.Config.API.Host + "/webhook/twitch/setup/subscriptions"
 	client := &http.Client{}
 
-	req, err := http.NewRequest("GET", url, nil)
+	ctx := context.Background()
+
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		return FollowWebhook{}, err
+		return FollowWebhook{}, fmt.Errorf("error getting webhooks: %w", err)
 	}
 
 	user := f.Config.API.User
@@ -81,34 +94,38 @@ func (f *FeelsdankmanProvider) GetWebhooks() (FollowWebhook, error) {
 
 	r, err := client.Do(req)
 	if err != nil {
-		return FollowWebhook{}, err
+		return FollowWebhook{}, fmt.Errorf("error getting webhooks: %w", err)
 	}
 	defer r.Body.Close()
 
 	data, err := io.ReadAll(r.Body)
 	if err != nil {
-		return FollowWebhook{}, err
+		return FollowWebhook{}, fmt.Errorf("error getting webhooks: %w", err)
 	}
 
 	var followWebhook FollowWebhook
+
 	err = json.Unmarshal(data, &followWebhook)
 	if err != nil {
-		return FollowWebhook{}, err
+		return FollowWebhook{}, fmt.Errorf("error getting webhook: %w", err)
 	}
 
-	if r.StatusCode != 200 {
-		return FollowWebhook{}, errors.New(strconv.Itoa(r.StatusCode))
+	if r.StatusCode != http.StatusOK {
+		return FollowWebhook{}, errBadStatus
 	}
+
 	return followWebhook, nil
 }
 
-func (f *FeelsdankmanProvider) GetApiUptime() (string, error) {
+func (f *FeelsdankmanProvider) GetAPIUptime() (string, error) {
 	url := "https://" + f.Config.API.Host + "/webhook/twitch/setup/uptime"
 	client := &http.Client{}
 
-	req, err := http.NewRequest("GET", url, nil)
+	ctx := context.Background()
+
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error uptime: %w", err)
 	}
 
 	user := f.Config.API.User
@@ -117,18 +134,19 @@ func (f *FeelsdankmanProvider) GetApiUptime() (string, error) {
 
 	r, err := client.Do(req)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error getting uptime: %w", err)
 	}
 	defer r.Body.Close()
 
 	data, err := io.ReadAll(r.Body)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error getting uptime: %w", err)
 	}
 
-	if r.StatusCode != 200 {
-		return "", errors.New(strconv.Itoa(r.StatusCode))
+	if r.StatusCode != http.StatusOK {
+		return "", errBadStatus
 	}
+
 	return string(data), nil
 }
 
@@ -149,9 +167,8 @@ type FollowWebhook struct {
 		} `json:"transport"`
 		Cost int `json:"cost"`
 	} `json:"data"`
-	Limit        int `json:"limit"`
-	MaxTotalCost int `json:"max_total_cost"`
-	TotalCost    int `json:"total_cost"`
-	Pagination   struct {
-	} `json:"pagination"`
+	Limit        int      `json:"limit"`
+	MaxTotalCost int      `json:"max_total_cost"`
+	TotalCost    int      `json:"total_cost"`
+	Pagination   struct{} `json:"pagination"`
 }
