@@ -24,7 +24,7 @@ func NewBot(config *config.Config) *Bot {
 	bot.config = config
 
 	bot.client = twitch.NewClient("gopherobot", "oauth:"+config.Twitch.Token)
-	bot.cmdHandler = cmd.NewCommandHandler(config, time.Now(), bot.client)
+	bot.cmdHandler = cmd.NewCommandHandler(config, time.Now(), bot.client, &bot.channels)
 
 	return &bot
 }

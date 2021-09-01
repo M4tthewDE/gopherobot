@@ -24,10 +24,10 @@ type CommandHandler struct {
 	spaceXProvider *provider.SpaceXProvider
 	startTime      time.Time
 	client         *twitch.Client
-	channels       []string
+	channels       *[]string
 }
 
-func NewCommandHandler(config *config.Config, startTime time.Time, client *twitch.Client) *CommandHandler {
+func NewCommandHandler(config *config.Config, startTime time.Time, client *twitch.Client, channels *[]string) *CommandHandler {
 	cmdHandler := CommandHandler{
 		config:         config,
 		twitchProvider: &provider.TwitchProvider{Config: config},
@@ -36,6 +36,7 @@ func NewCommandHandler(config *config.Config, startTime time.Time, client *twitc
 		spaceXProvider: &provider.SpaceXProvider{},
 		startTime:      startTime,
 		client:         client,
+		channels:       channels,
 	}
 
 	return &cmdHandler
@@ -158,7 +159,7 @@ func (c *CommandHandler) TmpJoinCommand(message twitch.PrivateMessage) string {
 	channel := args[0]
 
 	c.client.Join(channel)
-	c.channels = append(c.channels, channel)
+	*c.channels = append(*c.channels, channel)
 	return "Joined #" + channel
 }
 
@@ -172,12 +173,12 @@ func (c *CommandHandler) TmpLeaveCommand(message twitch.PrivateMessage) string {
 	c.client.Depart(channel)
 
 	var index int
-	for i, c := range c.channels {
+	for i, c := range *c.channels {
 		if c == channel {
 			index = i
 		}
 	}
-	c.channels = append(c.channels[:index], c.channels[index+1:]...)
+	*c.channels = append((*c.channels)[:index], (*c.channels)[index+1:]...)
 
 	return "Left #" + channel
 }
@@ -188,7 +189,7 @@ func (c *CommandHandler) GetChannelsCommand(message twitch.PrivateMessage) strin
 	}
 
 	var result string
-	for _, channel := range c.channels {
+	for _, channel := range *c.channels {
 		result = result + ", " + channel
 	}
 	result = "Joined Channels: [" + result[2:] + "]"
