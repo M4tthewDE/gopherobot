@@ -1,3 +1,5 @@
 linters-settings:
   cyclop:
     max-complexity: 20
+  funlen:
+    lines: 100
