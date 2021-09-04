@@ -28,7 +28,7 @@ jobs:
           #working-directory: src
 
           # Optional: golangci-lint command line arguments.
-          args: --enable-all --disable maligned --disable gomnd 
+          args: --enable-all --disable maligned --disable gomnd
 
           # Optional: show only new issues if it's a pull request. The default value is `false`.
           # only-new-issues: true

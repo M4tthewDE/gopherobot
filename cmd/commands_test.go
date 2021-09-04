@@ -1,10 +1,9 @@
-package cmd_test
+package cmd
 
 import (
 	"fmt"
 	"testing"
 
-	"de.com.fdm/gopherobot/cmd"
 	"github.com/gempir/go-twitch-irc/v2"
 	"github.com/stretchr/testify/assert"
 )
@@ -73,7 +72,7 @@ func TestHTTPStatusCommand(t *testing.T) {
 		"511": "Network Authentication Required",
 	}
 
-	cmdHandler := cmd.CommandHandler{}
+	cmdHandler := CommandHandler{}
 	message := twitch.PrivateMessage{}
 
 	for status, expected := range codes {
