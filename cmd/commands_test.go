@@ -17,15 +17,15 @@ func TestEchoCommand(t *testing.T) {
 		Message: ";echo test",
 	}
 	result := cmdHandler.EchoCommand(message)
-	assert.Equal(t, result, "test")
+	assert.Equal(t, "test", result)
 
 	message.Message = ";echo "
 	result = cmdHandler.EchoCommand(message)
-	assert.Equal(t, result, "")
+	assert.Equal(t, "", result)
 
 	message.Message = ";echo"
 	result = cmdHandler.EchoCommand(message)
-	assert.Equal(t, result, "")
+	assert.Equal(t, "", result)
 }
 
 func TestUserIDCommand(t *testing.T) {
@@ -40,11 +40,30 @@ func TestUserIDCommand(t *testing.T) {
 	}
 
 	result := cmdHandler.UserIDCommand(message)
-	assert.Equal(t, result, "User-ID of test is 1337")
+	assert.Equal(t, "User-ID of test is 1337", result)
 
 	message.Message = ";id"
 	result = cmdHandler.UserIDCommand(message)
-	assert.Equal(t, result, "No user provided")
+	assert.Equal(t, "No user provided", result)
+}
+
+func TestUserCommand(t *testing.T) {
+	t.Parallel()
+
+	cmdHandler := CommandHandler{
+		twitchProvider: &provider.TestTwitchProvider{},
+	}
+
+	message := twitch.PrivateMessage{
+		Message: ";user 1337",
+	}
+
+	result := cmdHandler.UserCommand(message)
+	assert.Equal(t, "Username for 1337 is user", result)
+
+	message.Message = ";user"
+	result = cmdHandler.UserCommand(message)
+	assert.Equal(t, "No ID provided", result)
 }
 
 func TestHTTPStatusCommand(t *testing.T) {
