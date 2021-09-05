@@ -21,7 +21,7 @@ type CommandHandler struct {
 	twitchProvider *provider.TwitchProvider
 	hasteProvider  *provider.HasteProvider
 	fdmProvider    *provider.FeelsdankmanProvider
-	spaceXProvider *provider.SpaceXProvider
+	launchProvider provider.LaunchProvider
 	startTime      time.Time
 	client         *twitch.Client
 	channels       *[]string
@@ -37,7 +37,7 @@ func NewCommandHandler(config *config.Config,
 		twitchProvider: &provider.TwitchProvider{Config: config},
 		hasteProvider:  &provider.HasteProvider{Config: config},
 		fdmProvider:    &provider.FeelsdankmanProvider{Config: config},
-		spaceXProvider: &provider.SpaceXProvider{},
+		launchProvider: provider.SpaceXProvider{},
 		startTime:      startTime,
 		client:         client,
 		channels:       channels,
@@ -287,7 +287,7 @@ func (c *CommandHandler) HTTPStatusCommand(message twitch.PrivateMessage) string
 }
 
 func (c *CommandHandler) NextLaunchCommand(message twitch.PrivateMessage) string {
-	nextLaunch, err := c.spaceXProvider.GetNextLaunch()
+	nextLaunch, err := c.launchProvider.GetNextLaunch()
 	if err != nil {
 		return err.Error()
 	}
