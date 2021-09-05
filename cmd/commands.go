@@ -246,7 +246,7 @@ func (c *CommandHandler) URLDecodeCommand(message twitch.PrivateMessage) string 
 
 func (c *CommandHandler) StreamInfoCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 12 {
-		return "No channel given"
+		return "No channel provided"
 	}
 
 	args := strings.Split(message.Message[12:], " ")

@@ -105,7 +105,19 @@ func (t *TestTwitchProvider) GetUser(id string) (string, error) {
 }
 
 func (t *TestTwitchProvider) GetStreamInfo(user string) (*helix.StreamsResponse, error) {
-	return &helix.StreamsResponse{}, nil
+	response := helix.StreamsResponse{
+		Data: helix.ManyStreams{
+			Streams: []helix.Stream{
+				{
+					Title:       "test-title",
+					GameName:    "test-game",
+					ViewerCount: 1000,
+				},
+			},
+		},
+	}
+
+	return &response, nil
 }
 
 func (t *TestTwitchProvider) RevokeAuth(auth string) error {

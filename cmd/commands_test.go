@@ -66,6 +66,25 @@ func TestUserCommand(t *testing.T) {
 	assert.Equal(t, "No ID provided", result)
 }
 
+func TestStreamInfoCommand(t *testing.T) {
+	t.Parallel()
+
+	cmdHandler := CommandHandler{
+		twitchProvider: &provider.TestTwitchProvider{},
+	}
+
+	message := twitch.PrivateMessage{
+		Message: ";streaminfo test",
+	}
+
+	result := cmdHandler.StreamInfoCommand(message)
+	assert.Equal(t, "test-title, test-game, 1000", result)
+
+	message.Message = ";streaminfo"
+	result = cmdHandler.StreamInfoCommand(message)
+	assert.Equal(t, "No channel provided", result)
+}
+
 func TestHTTPStatusCommand(t *testing.T) {
 	t.Parallel()
 
