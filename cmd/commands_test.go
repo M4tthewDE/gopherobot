@@ -28,6 +28,25 @@ func TestEchoCommand(t *testing.T) {
 	assert.Equal(t, result, "")
 }
 
+func TestUserIDCommand(t *testing.T) {
+	t.Parallel()
+
+	cmdHandler := CommandHandler{
+		twitchProvider: &provider.TestTwitchProvider{},
+	}
+
+	message := twitch.PrivateMessage{
+		Message: ";id test",
+	}
+
+	result := cmdHandler.UserIDCommand(message)
+	assert.Equal(t, result, "User-ID of test is 1337")
+
+	message.Message = ";id"
+	result = cmdHandler.UserIDCommand(message)
+	assert.Equal(t, result, "No user provided")
+}
+
 func TestHTTPStatusCommand(t *testing.T) {
 	t.Parallel()
 

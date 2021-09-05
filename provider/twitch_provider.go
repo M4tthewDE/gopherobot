@@ -91,3 +91,23 @@ func (t *ActualTwitchProvider) RevokeAuth(auth string) error {
 
 	return nil
 }
+
+type TestTwitchProvider struct {
+	Config *config.Config
+}
+
+func (t *TestTwitchProvider) GetUserID(user string) (string, error) {
+	return "1337", nil
+}
+
+func (t *TestTwitchProvider) GetUser(id string) (string, error) {
+	return "user", nil
+}
+
+func (t *TestTwitchProvider) GetStreamInfo(user string) (*helix.StreamsResponse, error) {
+	return &helix.StreamsResponse{}, nil
+}
+
+func (t *TestTwitchProvider) RevokeAuth(auth string) error {
+	return nil
+}
