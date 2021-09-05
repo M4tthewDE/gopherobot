@@ -17,15 +17,72 @@ func TestEchoCommand(t *testing.T) {
 		Message: ";echo test",
 	}
 	result := cmdHandler.EchoCommand(message)
-	assert.Equal(t, result, "test")
+	assert.Equal(t, "test", result)
 
 	message.Message = ";echo "
 	result = cmdHandler.EchoCommand(message)
-	assert.Equal(t, result, "")
+	assert.Equal(t, "", result)
 
 	message.Message = ";echo"
 	result = cmdHandler.EchoCommand(message)
-	assert.Equal(t, result, "")
+	assert.Equal(t, "", result)
+}
+
+func TestUserIDCommand(t *testing.T) {
+	t.Parallel()
+
+	cmdHandler := CommandHandler{
+		twitchProvider: &provider.TestTwitchProvider{},
+	}
+
+	message := twitch.PrivateMessage{
+		Message: ";id test",
+	}
+
+	result := cmdHandler.UserIDCommand(message)
+	assert.Equal(t, "User-ID of test is 1337", result)
+
+	message.Message = ";id"
+	result = cmdHandler.UserIDCommand(message)
+	assert.Equal(t, "No user provided", result)
+}
+
+func TestUserCommand(t *testing.T) {
+	t.Parallel()
+
+	cmdHandler := CommandHandler{
+		twitchProvider: &provider.TestTwitchProvider{},
+	}
+
+	message := twitch.PrivateMessage{
+		Message: ";user 1337",
+	}
+
+	result := cmdHandler.UserCommand(message)
+	assert.Equal(t, "Username for 1337 is user", result)
+
+	message.Message = ";user"
+	result = cmdHandler.UserCommand(message)
+	assert.Equal(t, "No ID provided", result)
+}
+
+func TestStreamInfoCommand(t *testing.T) {
+	t.Parallel()
+
+	cmdHandler := CommandHandler{
+		twitchProvider: &provider.TestTwitchProvider{},
+	}
+
+	message := twitch.PrivateMessage{
+		Message: ";streaminfo test",
+	}
+
+	result := cmdHandler.StreamInfoCommand(message)
+	assert.Equal(t, "test-title, test-game, 1000", result)
+
+	message.Message = ";streaminfo"
+	result = cmdHandler.StreamInfoCommand(message)
+	assert.Equal(t, "No channel provided", result)
 }
 
 func TestHTTPStatusCommand(t *testing.T) {

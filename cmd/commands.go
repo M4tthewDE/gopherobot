@@ -18,7 +18,7 @@ import (
 
 type CommandHandler struct {
 	config         *config.Config
-	twitchProvider *provider.TwitchProvider
+	twitchProvider provider.TwitchProvider
 	hasteProvider  *provider.HasteProvider
 	fdmProvider    *provider.FeelsdankmanProvider
 	launchProvider provider.LaunchProvider
@@ -34,7 +34,7 @@ func NewCommandHandler(config *config.Config,
 ) *CommandHandler {
 	cmdHandler := CommandHandler{
 		config:         config,
-		twitchProvider: &provider.TwitchProvider{Config: config},
+		twitchProvider: &provider.ActualTwitchProvider{Config: config},
 		hasteProvider:  &provider.HasteProvider{Config: config},
 		fdmProvider:    &provider.FeelsdankmanProvider{Config: config},
 		launchProvider: provider.SpaceXProvider{},
@@ -45,6 +45,8 @@ func NewCommandHandler(config *config.Config,
 
 	return &cmdHandler
 }
+
+const NOCHANNEL = "No channel provided"
 
 func (c *CommandHandler) EchoCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 6 {
@@ -167,7 +169,7 @@ func (c *CommandHandler) RawMsgCommand(rawMessage string) string {
 
 func (c *CommandHandler) TmpJoinCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 9 {
-		return `No channel provided`
+		return NOCHANNEL
 	}
 
 	args := strings.Split(message.Message[9:], " ")
@@ -181,7 +183,7 @@ func (c *CommandHandler) TmpJoinCommand(message twitch.PrivateMessage) string {
 
 func (c *CommandHandler) TmpLeaveCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 10 {
-		return `No channel provided`
+		return NOCHANNEL
 	}
 
 	args := strings.Split(message.Message[10:], " ")
@@ -246,7 +248,7 @@ func (c *CommandHandler) URLDecodeCommand(message twitch.PrivateMessage) string 
 
 func (c *CommandHandler) StreamInfoCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 12 {
-		return "No channel given"
+		return NOCHANNEL
 	}
 
 	args := strings.Split(message.Message[12:], " ")
