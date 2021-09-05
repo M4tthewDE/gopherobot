@@ -47,6 +47,10 @@ func NewCommandHandler(config *config.Config,
 }
 
 func (c *CommandHandler) EchoCommand(message twitch.PrivateMessage) string {
+	if len(message.Message) < 6 {
+		return ""
+	}
+
 	return message.Message[6:]
 }
 

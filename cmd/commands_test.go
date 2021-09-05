@@ -8,6 +8,25 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestEchoCommand(t *testing.T) {
+	t.Parallel()
+
+	cmdHandler := CommandHandler{}
+	message := twitch.PrivateMessage{
+		Message: ";echo test",
+	}
+	result := cmdHandler.EchoCommand(message)
+	assert.Equal(t, result, "test")
+
+	message.Message = ";echo "
+	result = cmdHandler.EchoCommand(message)
+	assert.Equal(t, result, "")
+
+	message.Message = ";echo"
+	result = cmdHandler.EchoCommand(message)
+	assert.Equal(t, result, "")
+}
+
 func TestHTTPStatusCommand(t *testing.T) {
 	t.Parallel()
 
