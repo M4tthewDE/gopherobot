@@ -278,7 +278,7 @@ func (c *CommandHandler) HTTPStatusCommand(message twitch.PrivateMessage) string
 
 	code, err := strconv.Atoi(args[0])
 	if err != nil {
-		return "No valid number provided"
+		return "No valid code provided"
 	}
 
 	result := http.StatusText(code)

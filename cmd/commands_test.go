@@ -97,6 +97,18 @@ func TestHTTPStatusCommand(t *testing.T) {
 	for status, expected := range codes {
 		message.Message = fmt.Sprintf(";httpstatus %s", status)
 		result := cmdHandler.HTTPStatusCommand(message)
-		assert.Equal(t, result, expected, "should be equals")
+		assert.Equal(t, expected, result, "should be equals")
 	}
+
+	message.Message = ";httpstatus"
+	result := cmdHandler.HTTPStatusCommand(message)
+	assert.Equal(t, "No code provided", result)
+
+	message.Message = ";httpstatus "
+	result = cmdHandler.HTTPStatusCommand(message)
+	assert.Equal(t, "No valid code provided", result)
+
+	message.Message = ";httpstatus test"
+	result = cmdHandler.HTTPStatusCommand(message)
+	assert.Equal(t, "No valid code provided", result)
 }
