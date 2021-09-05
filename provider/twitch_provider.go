@@ -7,11 +7,18 @@ import (
 	"github.com/nicklaw5/helix"
 )
 
-type TwitchProvider struct {
+type TwitchProvider interface {
+	GetUserID(user string) (string, error)
+	GetUser(id string) (string, error)
+	GetStreamInfo(user string) (*helix.StreamsResponse, error)
+	RevokeAuth(auth string) error
+}
+
+type ActualTwitchProvider struct {
 	Config *config.Config
 }
 
-func (t *TwitchProvider) GetUserID(user string) (string, error) {
+func (t *ActualTwitchProvider) GetUserID(user string) (string, error) {
 	client, err := helix.NewClient(&helix.Options{
 		ClientID:        t.Config.Twitch.ClientID,
 		UserAccessToken: t.Config.Twitch.Token,
@@ -30,7 +37,7 @@ func (t *TwitchProvider) GetUserID(user string) (string, error) {
 	return resp.Data.Users[0].ID, nil
 }
 
-func (t *TwitchProvider) GetUser(id string) (string, error) {
+func (t *ActualTwitchProvider) GetUser(id string) (string, error) {
 	client, err := helix.NewClient(&helix.Options{
 		ClientID:        t.Config.Twitch.ClientID,
 		UserAccessToken: t.Config.Twitch.Token,
@@ -49,7 +56,7 @@ func (t *TwitchProvider) GetUser(id string) (string, error) {
 	return resp.Data.Users[0].Login, nil
 }
 
-func (t *TwitchProvider) GetStreamInfo(user string) (*helix.StreamsResponse, error) {
+func (t *ActualTwitchProvider) GetStreamInfo(user string) (*helix.StreamsResponse, error) {
 	client, err := helix.NewClient(&helix.Options{
 		ClientID:        t.Config.Twitch.ClientID,
 		UserAccessToken: t.Config.Twitch.Token,
@@ -68,7 +75,7 @@ func (t *TwitchProvider) GetStreamInfo(user string) (*helix.StreamsResponse, err
 	return resp, nil
 }
 
-func (t *TwitchProvider) RevokeAuth(auth string) error {
+func (t *ActualTwitchProvider) RevokeAuth(auth string) error {
 	client, err := helix.NewClient(&helix.Options{
 		ClientID:        t.Config.Twitch.ClientID,
 		UserAccessToken: t.Config.Twitch.Token,
