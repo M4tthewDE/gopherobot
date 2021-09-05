@@ -46,6 +46,8 @@ func NewCommandHandler(config *config.Config,
 	return &cmdHandler
 }
 
+const NOCHANNEL = "No channel provided"
+
 func (c *CommandHandler) EchoCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 6 {
 		return ""
@@ -167,7 +169,7 @@ func (c *CommandHandler) RawMsgCommand(rawMessage string) string {
 
 func (c *CommandHandler) TmpJoinCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 9 {
-		return `No channel provided`
+		return NOCHANNEL
 	}
 
 	args := strings.Split(message.Message[9:], " ")
@@ -181,7 +183,7 @@ func (c *CommandHandler) TmpJoinCommand(message twitch.PrivateMessage) string {
 
 func (c *CommandHandler) TmpLeaveCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 10 {
-		return `No channel provided`
+		return NOCHANNEL
 	}
 
 	args := strings.Split(message.Message[10:], " ")
@@ -246,7 +248,7 @@ func (c *CommandHandler) URLDecodeCommand(message twitch.PrivateMessage) string 
 
 func (c *CommandHandler) StreamInfoCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 12 {
-		return "No channel provided"
+		return NOCHANNEL
 	}
 
 	args := strings.Split(message.Message[12:], " ")
