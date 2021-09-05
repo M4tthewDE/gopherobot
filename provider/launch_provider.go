@@ -9,9 +9,13 @@ import (
 	"time"
 )
 
+type LaunchProvider interface {
+	GetNextLaunch() (NextLaunch, error)
+}
+
 type SpaceXProvider struct{}
 
-func (s *SpaceXProvider) GetNextLaunch() (NextLaunch, error) {
+func (s SpaceXProvider) GetNextLaunch() (NextLaunch, error) {
 	httpClient := &http.Client{}
 
 	ctx := context.Background()
@@ -41,6 +45,16 @@ func (s *SpaceXProvider) GetNextLaunch() (NextLaunch, error) {
 	}
 
 	return nextLaunch, nil
+}
+
+type TestLaunchProvider struct{}
+
+func (t TestLaunchProvider) GetNextLaunch() (NextLaunch, error) {
+	return NextLaunch{
+		DateUtc: time.Date(2021, 1, 1, 12, 0, 0, 0, time.FixedZone("UTC", 0)),
+		Name:    "Test-Launch",
+		Details: "Test-Details",
+	}, nil
 }
 
 type NextLaunch struct {

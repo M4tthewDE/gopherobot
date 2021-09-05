@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"de.com.fdm/gopherobot/provider"
 	"github.com/gempir/go-twitch-irc/v2"
 	"github.com/stretchr/testify/assert"
 )
@@ -111,4 +112,18 @@ func TestHTTPStatusCommand(t *testing.T) {
 	message.Message = ";httpstatus test"
 	result = cmdHandler.HTTPStatusCommand(message)
 	assert.Equal(t, "No valid code provided", result)
+}
+
+func TestNextLaunchCommand(t *testing.T) {
+	t.Parallel()
+
+	cmdHandler := CommandHandler{
+		launchProvider: provider.TestLaunchProvider{},
+	}
+	message := twitch.PrivateMessage{
+		Message: ";nextlaunch",
+	}
+
+	result := cmdHandler.NextLaunchCommand(message)
+	assert.Equal(t, "2021-01-01 12:00:00 +0000 UTC (UTC) | Name: Test-Launch | Details: Test-Details", result)
 }
