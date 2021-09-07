@@ -3,3 +3,15 @@ linters-settings:
     max-complexity: 20
   funlen:
     lines: 100
+linters:
+  enable-all: true
+  disable:
+    - testpackage
+    - exhaustivestruct
+    - tagliatelle
+    - maligned
+    - gomnd
+    - scopelint
+    - interfacer
+    - golint
+    - gomoddirectives
