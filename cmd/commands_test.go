@@ -182,5 +182,5 @@ func TestNextLaunchCommand(t *testing.T) {
 	}
 
 	result := cmdHandler.NextLaunchCommand(message)
-	assert.Equal(t, "2021-01-01 12:00:00 +0000 UTC (UTC) | Name: Test-Launch | Details: Test-Details", result)
+	assert.Equal(t, "2021-01-01 12:00:00 +0000 UTC (-6188h36m0s) | Name: Test-Launch | Details: Test-Details", result)
 }

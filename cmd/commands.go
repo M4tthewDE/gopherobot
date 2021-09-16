@@ -294,7 +294,7 @@ func (c *CommandHandler) NextLaunchCommand(message twitch.PrivateMessage) string
 		return err.Error()
 	}
 
-	result := nextLaunch.DateUtc.String() + " (UTC) | "
+	result := nextLaunch.DateUtc.String() + " (" + time.Until(nextLaunch.DateUtc).Round(time.Minute).String() + ") | "
 	result += "Name: " + nextLaunch.Name + " | "
 
 	if len(result+"Details: "+nextLaunch.Details) > 500 {
