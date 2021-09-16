@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"de.com.fdm/gopherobot/provider"
 	"github.com/gempir/go-twitch-irc/v2"
@@ -181,6 +182,9 @@ func TestNextLaunchCommand(t *testing.T) {
 		Message: ";nextlaunch",
 	}
 
+	date := time.Date(2021, 1, 1, 12, 0, 0, 0, time.FixedZone("UTC", 0))
+	remaining := time.Until(date).Round(time.Minute).String()
+
 	result := cmdHandler.NextLaunchCommand(message)
-	assert.Equal(t, "2021-01-01 12:00:00 +0000 UTC (-6188h36m0s) | Name: Test-Launch | Details: Test-Details", result)
+	assert.Equal(t, "2021-01-01 12:00:00 +0000 UTC ("+remaining+") | Name: Test-Launch | Details: Test-Details", result)
 }
