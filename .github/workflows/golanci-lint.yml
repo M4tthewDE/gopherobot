@@ -1,7 +1,7 @@
 name: golangci-lint
 on:
   push:
-    branches:
+    branches: fix-actions
   pull_request:
     branches:
   workflow_dispatch:
