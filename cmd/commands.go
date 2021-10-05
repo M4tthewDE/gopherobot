@@ -19,8 +19,8 @@ import (
 type CommandHandler struct {
 	config         *config.Config
 	twitchProvider provider.TwitchProvider
-	hasteProvider  *provider.HasteProvider
-	fdmProvider    *provider.FeelsdankmanProvider
+	hasteProvider  provider.HasteProvider
+	fdmProvider    provider.FeelsdankmanProvider
 	launchProvider provider.LaunchProvider
 	startTime      time.Time
 	client         *twitch.Client
@@ -35,8 +35,8 @@ func NewCommandHandler(config *config.Config,
 	cmdHandler := CommandHandler{
 		config:         config,
 		twitchProvider: &provider.ActualTwitchProvider{Config: config},
-		hasteProvider:  &provider.HasteProvider{Config: config},
-		fdmProvider:    &provider.FeelsdankmanProvider{Config: config},
+		hasteProvider:  provider.HasteProvider{Config: config},
+		fdmProvider:    provider.FeelsdankmanProvider{Config: config},
 		launchProvider: provider.SpaceXProvider{},
 		startTime:      startTime,
 		client:         client,
