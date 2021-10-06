@@ -53,6 +53,10 @@ func (t *ActualTwitchProvider) GetUser(id string) (string, error) {
 		return "", fmt.Errorf("error getting user: %w", err)
 	}
 
+	if len(resp.Data.Users) == 0 {
+		return "", fmt.Errorf("no user found")
+	}
+
 	return resp.Data.Users[0].Login, nil
 }
 
