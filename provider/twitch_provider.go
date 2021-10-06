@@ -34,6 +34,10 @@ func (t *ActualTwitchProvider) GetUserID(user string) (string, error) {
 		return "", fmt.Errorf("error getting user id: %w", err)
 	}
 
+	if len(resp.Data.Users) == 0 {
+		return "", fmt.Errorf("no user found")
+	}
+
 	return resp.Data.Users[0].ID, nil
 }
 
