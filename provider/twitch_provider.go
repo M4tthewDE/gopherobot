@@ -1,11 +1,14 @@
 package provider
 
 import (
+	"errors"
 	"fmt"
 
 	"de.com.fdm/gopherobot/config"
 	"github.com/nicklaw5/helix"
 )
+
+var errUserNotFound = errors.New("no user found")
 
 type TwitchProvider interface {
 	GetUserID(user string) (string, error)
@@ -34,6 +37,10 @@ func (t *ActualTwitchProvider) GetUserID(user string) (string, error) {
 		return "", fmt.Errorf("error getting user id: %w", err)
 	}
 
+	if len(resp.Data.Users) == 0 {
+		return "", errUserNotFound
+	}
+
 	return resp.Data.Users[0].ID, nil
 }
 
@@ -51,6 +58,10 @@ func (t *ActualTwitchProvider) GetUser(id string) (string, error) {
 	})
 	if err != nil {
 		return "", fmt.Errorf("error getting user: %w", err)
+	}
+
+	if len(resp.Data.Users) == 0 {
+		return "", errUserNotFound
 	}
 
 	return resp.Data.Users[0].Login, nil
