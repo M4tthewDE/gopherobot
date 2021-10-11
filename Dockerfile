@@ -4,4 +4,5 @@ WORKDIR /app
 COPY . ./
 RUN go mod download
 RUN go build -o target/gopherobot . 
+RUN apk add --no-cache git
 CMD ["./target/gopherobot"]
