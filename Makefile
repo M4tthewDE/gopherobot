@@ -1,3 +1,5 @@
+.PHONY: build lint test clean
+
 build:
 	go build -o target/gopherobot .
 lint:
