@@ -1,8 +1,11 @@
-FROM golang:1.16-alpine 
+FROM golang:latest
 MAINTAINER m4tthewde github.com/m4tthewde
-WORKDIR /app
-COPY . ./
+WORKDIR /go/src/github.com/m4tthewde/gopherobot
+COPY . .
 RUN go mod download
-RUN go build -o target/gopherobot . 
+RUN CGO_ENABLED=0 go build -o target/gopherobot . 
+
+FROM alpine:latest
 RUN apk add --no-cache git
+COPY --from=0 /go/src/github.com/m4tthewde/gopherobot/ .
 CMD ["./target/gopherobot"]
