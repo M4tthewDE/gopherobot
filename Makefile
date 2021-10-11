@@ -6,5 +6,6 @@ lint:
 	golangci-lint run . bot/... cmd/... config/... provider/... util/...
 test:
 	go test ./...
-clean:
-	rm -rf target/
+
+docker:
+	sudo docker build --tag gopherobot .

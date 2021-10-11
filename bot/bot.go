@@ -21,6 +21,9 @@ func NewBot(config *config.Config) *Bot {
 	bot.config = config
 
 	bot.client = twitch.NewClient("gopherobot", "oauth:"+config.Twitch.Token)
+
+	// some Networks might block 6697
+	bot.client.IrcAddress = "irc.chat.twitch.tv:443"
 	bot.cmdHandler = cmd.NewCommandHandler(config, time.Now(), bot.client, &bot.channels)
 
 	return &bot
