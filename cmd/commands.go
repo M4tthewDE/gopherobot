@@ -145,7 +145,7 @@ func (c *CommandHandler) GetFollowAlertsCommand() string {
 
 func (c *CommandHandler) PingCommand(message twitch.PrivateMessage) string {
 	uptime := time.Since(c.startTime)
-	result := "Pong! Uptime: " + durafmt.Parse(uptime).LimitFirstN(2).String() + ","
+	result := "Uptime: " + durafmt.Parse(uptime).LimitFirstN(2).String() + ","
 
 	apiUptime, err := c.fdmProvider.GetAPIUptime()
 	if err != nil {
