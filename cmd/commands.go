@@ -145,17 +145,17 @@ func (c *CommandHandler) GetFollowAlertsCommand() string {
 
 func (c *CommandHandler) PingCommand(message twitch.PrivateMessage) string {
 	uptime := time.Since(c.startTime)
-	result := "Uptime: " + durafmt.Parse(uptime).LimitFirstN(2).String() + ","
+	result := "Uptime: " + durafmt.Parse(uptime).LimitFirstN(2).String() + " |"
 
 	apiUptime, err := c.fdmProvider.GetAPIUptime()
 	if err != nil {
 		result += " API-Uptime: Unavailable monkaS"
 	} else {
-		result += " API-Uptime: " + apiUptime + ","
+		result += " API-Uptime: " + apiUptime + " |"
 	}
 
-	result += " Commit: " + c.config.Git.Commit + ","
-	result += " Branch: " + c.config.Git.Branch + ","
+	result += " Commit: " + c.config.Git.Commit + " |"
+	result += " Branch: " + c.config.Git.Branch + " |"
 
 	latency := util.GetLatency(message)
 	result += " Latency to tmi: " + latency
