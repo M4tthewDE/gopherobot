@@ -62,10 +62,6 @@ func (b *Bot) doWhisperCommand(message twitch.WhisperMessage) {
 func (b *Bot) onMessage(message twitch.PrivateMessage) {
 	prefix := message.Message[0:1]
 
-	if message.User.ID == "82008718" && strings.HasPrefix(message.Message, "pajaS 🚨") {
-		b.client.Say(message.Channel, "pajaOMG 🚨")
-	}
-
 	if prefix == b.config.Bot.Prefix && message.User.ID == "116672490" {
 		b.doCommand(message)
 	}
