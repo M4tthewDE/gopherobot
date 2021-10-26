@@ -14,6 +14,7 @@ type Bot struct {
 	cmdHandler *cmd.CommandHandler
 	client     *twitch.Client
 	channels   []string
+	lastPing   time.Time
 }
 
 func NewBot(config *config.Config) *Bot {
@@ -24,7 +25,12 @@ func NewBot(config *config.Config) *Bot {
 
 	// some Networks might block 6697
 	bot.client.IrcAddress = "irc.chat.twitch.tv:443"
+
+	// lower PING interval for latency checking
+	bot.client.IdlePingInterval = 5 * time.Second
+
 	bot.cmdHandler = cmd.NewCommandHandler(config, time.Now(), bot.client, &bot.channels)
+	go bot.cmdHandler.LatencyReader()
 
 	return &bot
 }
@@ -32,6 +38,8 @@ func NewBot(config *config.Config) *Bot {
 func (b *Bot) Run() {
 	b.client.OnPrivateMessage(b.onMessage)
 	b.client.OnWhisperMessage(b.onWhisper)
+	b.client.OnPongMessage(b.onPong)
+	b.client.OnPingSent(b.onPingSent)
 
 	b.client.Join(b.config.Bot.Channels...)
 	b.channels = append(b.channels, b.config.Bot.Channels...)
@@ -39,6 +47,14 @@ func (b *Bot) Run() {
 	if err := b.client.Connect(); err != nil {
 		panic(err)
 	}
+}
+
+func (b *Bot) onPong(message twitch.PongMessage) {
+	b.cmdHandler.LatencyChannel <- time.Since(b.lastPing)
+}
+
+func (b *Bot) onPingSent() {
+	b.lastPing = time.Now()
 }
 
 func (b *Bot) onWhisper(message twitch.WhisperMessage) {

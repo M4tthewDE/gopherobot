@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -11,7 +12,6 @@ import (
 
 	"de.com.fdm/gopherobot/config"
 	"de.com.fdm/gopherobot/provider"
-	"de.com.fdm/gopherobot/util"
 	"github.com/gempir/go-twitch-irc/v2"
 	"github.com/hako/durafmt"
 )
@@ -25,6 +25,8 @@ type CommandHandler struct {
 	startTime      time.Time
 	client         *twitch.Client
 	channels       *[]string
+	latency        time.Duration
+	LatencyChannel chan (time.Duration)
 }
 
 func NewCommandHandler(config *config.Config,
@@ -41,12 +43,19 @@ func NewCommandHandler(config *config.Config,
 		startTime:      startTime,
 		client:         client,
 		channels:       channels,
+		LatencyChannel: make(chan (time.Duration)),
 	}
 
 	return &cmdHandler
 }
 
 const NOCHANNEL = "No channel provided"
+
+func (c *CommandHandler) LatencyReader() {
+	for latency := range c.LatencyChannel {
+		c.latency = latency
+	}
+}
 
 func (c *CommandHandler) EchoCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 6 {
@@ -157,8 +166,7 @@ func (c *CommandHandler) PingCommand(message twitch.PrivateMessage) string {
 	result += " Commit: " + c.config.Git.Commit + " |"
 	result += " Branch: " + c.config.Git.Branch + " |"
 
-	latency := util.GetLatency(message)
-	result += " Latency to tmi: " + latency
+	result += " Latency to tmi: " + fmt.Sprint(c.latency)
 
 	return result
 }
