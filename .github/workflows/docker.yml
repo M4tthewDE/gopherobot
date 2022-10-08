@@ -5,6 +5,8 @@ on:
     branches:
       - 'master'
 
+# see https://github.com/Chatterino/api/blob/master/.github/workflows/docker-publish.yml
+# for reference
 jobs:
   push:
     runs-on: ubuntu-latest
@@ -19,6 +21,9 @@ jobs:
 
       - name: Push image to GitHub Container Registry
         run: |
+          # Change all uppercase to lowercase
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+
           IMAGE_ID=ghcr.io/${{ github.repository_owner }}/gopherobot
 
           docker tag gopherobot $IMAGE_ID:latest
