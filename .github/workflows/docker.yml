@@ -21,5 +21,5 @@ jobs:
         run: |
           IMAGE_ID=ghcr.io/${{ github.repository_owner }}/gopherobot
 
-          docker tag $IMAGE_NAME $IMAGE_ID:latest
+          docker tag gopherobot $IMAGE_ID:latest
           docker push $IMAGE_ID:latest
