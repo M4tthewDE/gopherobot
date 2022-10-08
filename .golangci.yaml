@@ -16,3 +16,9 @@ linters:
     - interfacer
     - golint
     - gomoddirectives
+    - ifshort
+    - contextcheck
+    - rowserrcheck
+    - structcheck
+    - sqlclosecheck
+    - wastedassign
