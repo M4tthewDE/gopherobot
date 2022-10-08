@@ -9,12 +9,12 @@ import (
 )
 
 func GetConfig() *Config {
-	f, err := os.Open("config.yml")
+	file, err := os.Open("config.yml")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	decoder := yaml.NewDecoder(f)
+	decoder := yaml.NewDecoder(file)
 
 	var config Config
 
@@ -23,7 +23,7 @@ func GetConfig() *Config {
 		log.Fatal(err)
 	}
 
-	f.Close()
+	file.Close()
 
 	branch, err := util.GetBranch()
 	if err != nil {
