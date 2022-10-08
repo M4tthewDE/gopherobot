@@ -2,7 +2,7 @@ version: '3.5'
 
 services:
   gopherobot:
-    image: m4tthewde/gopherobot:latest
+    image: ghcr.io/m4tthewde/gopherobot:latest
     container_name: gopherobot
     restart: always
     network_mode: host
