@@ -35,12 +35,13 @@ func NewCommandHandler(config *config.Config,
 ) *CommandHandler {
 	cmdHandler := CommandHandler{
 		config:         config,
-		twitchProvider: &provider.ActualTwitchProvider{Config: config},
+		twitchProvider: provider.TwitchProvider{Config: config},
 		hasteProvider:  provider.HasteProvider{Config: config},
 		launchProvider: provider.SpaceXProvider{},
 		startTime:      startTime,
 		client:         client,
 		channels:       channels,
+		latency:        1 * time.Second,
 		LatencyChannel: make(chan (time.Duration)),
 	}
 
