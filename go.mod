@@ -1,11 +1,12 @@
 module de.com.fdm/gopherobot
 
-go 1.16
+go 1.19
 
 require (
-	github.com/gempir/go-twitch-irc/v2 v2.5.0
+	github.com/gempir/go-twitch-irc/v2 v2.8.1
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
-	github.com/nicklaw5/helix v1.24.2
-	github.com/stretchr/testify v1.8.0
+	github.com/nicklaw5/helix v1.25.0
 	gopkg.in/yaml.v2 v2.4.0
 )
+
+require github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
