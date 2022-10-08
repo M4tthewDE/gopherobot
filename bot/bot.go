@@ -13,7 +13,9 @@ type Bot struct {
 	config     *config.Config
 	cmdHandler *cmd.CommandHandler
 	client     *twitch.Client
+	pingClient *twitch.Client
 	channels   []string
+	lastPing   time.Time
 }
 
 func NewBot(config *config.Config) *Bot {
@@ -21,10 +23,17 @@ func NewBot(config *config.Config) *Bot {
 	bot.config = config
 
 	bot.client = twitch.NewClient("gopherobot", "oauth:"+config.Twitch.Token)
+	bot.pingClient = twitch.NewAnonymousClient()
 
 	// some Networks might block 6697
 	bot.client.IrcAddress = "irc.chat.twitch.tv:443"
+	bot.pingClient.IrcAddress = "irc.chat.twitch.tv:443"
+
+	// lower PING interval for latency checking
+	bot.pingClient.IdlePingInterval = 5 * time.Second
+
 	bot.cmdHandler = cmd.NewCommandHandler(config, time.Now(), bot.client, &bot.channels)
+	go bot.cmdHandler.LatencyReader()
 
 	return &bot
 }
@@ -32,13 +41,31 @@ func NewBot(config *config.Config) *Bot {
 func (b *Bot) Run() {
 	b.client.OnPrivateMessage(b.onMessage)
 	b.client.OnWhisperMessage(b.onWhisper)
+	b.pingClient.OnPongMessage(b.onPong)
+	b.pingClient.OnPingSent(b.onPingSent)
 
 	b.client.Join(b.config.Bot.Channels...)
 	b.channels = append(b.channels, b.config.Bot.Channels...)
 
+	go b.RunPingService()
+
 	if err := b.client.Connect(); err != nil {
 		panic(err)
 	}
+}
+
+func (b *Bot) RunPingService() {
+	if err := b.pingClient.Connect(); err != nil {
+		panic(err)
+	}
+}
+
+func (b *Bot) onPong(message twitch.PongMessage) {
+	b.cmdHandler.LatencyChannel <- time.Since(b.lastPing)
+}
+
+func (b *Bot) onPingSent() {
+	b.lastPing = time.Now()
 }
 
 func (b *Bot) onWhisper(message twitch.WhisperMessage) {
@@ -76,12 +103,6 @@ func (b *Bot) doCommand(message twitch.PrivateMessage) {
 		b.client.Say(message.Channel, b.cmdHandler.UserIDCommand(message))
 	case "user":
 		b.client.Say(message.Channel, b.cmdHandler.UserCommand(message))
-	case "addfollowalert":
-		b.client.Say(message.Channel, b.cmdHandler.AddFollowAlertCommand(message))
-	case "removefollowalert":
-		b.client.Say(message.Channel, b.cmdHandler.RemoveFollowAlertCommand(message))
-	case "getfollowalerts":
-		b.client.Say(message.Channel, b.cmdHandler.GetFollowAlertsCommand())
 	case "ping":
 		b.client.Say(message.Channel, b.cmdHandler.PingCommand(message))
 	case "rawmsg":

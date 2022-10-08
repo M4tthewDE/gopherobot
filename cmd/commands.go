@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -11,7 +12,6 @@ import (
 
 	"de.com.fdm/gopherobot/config"
 	"de.com.fdm/gopherobot/provider"
-	"de.com.fdm/gopherobot/util"
 	"github.com/gempir/go-twitch-irc/v2"
 	"github.com/hako/durafmt"
 )
@@ -20,11 +20,12 @@ type CommandHandler struct {
 	config         *config.Config
 	twitchProvider provider.TwitchProvider
 	hasteProvider  provider.HasteProvider
-	fdmProvider    provider.FeelsdankmanProvider
 	launchProvider provider.LaunchProvider
 	startTime      time.Time
 	client         *twitch.Client
 	channels       *[]string
+	latency        time.Duration
+	LatencyChannel chan (time.Duration)
 }
 
 func NewCommandHandler(config *config.Config,
@@ -34,19 +35,26 @@ func NewCommandHandler(config *config.Config,
 ) *CommandHandler {
 	cmdHandler := CommandHandler{
 		config:         config,
-		twitchProvider: &provider.ActualTwitchProvider{Config: config},
+		twitchProvider: provider.TwitchProvider{Config: config},
 		hasteProvider:  provider.HasteProvider{Config: config},
-		fdmProvider:    provider.FeelsdankmanProvider{Config: config},
 		launchProvider: provider.SpaceXProvider{},
 		startTime:      startTime,
 		client:         client,
 		channels:       channels,
+		latency:        1 * time.Second,
+		LatencyChannel: make(chan (time.Duration)),
 	}
 
 	return &cmdHandler
 }
 
 const NOCHANNEL = "No channel provided"
+
+func (c *CommandHandler) LatencyReader() {
+	for latency := range c.LatencyChannel {
+		c.latency = latency
+	}
+}
 
 func (c *CommandHandler) EchoCommand(message twitch.PrivateMessage) string {
 	if len(message.Message) < 6 {
@@ -88,77 +96,14 @@ func (c *CommandHandler) UserCommand(message twitch.PrivateMessage) string {
 	return "Username for " + args[0] + " is " + user
 }
 
-func (c *CommandHandler) AddFollowAlertCommand(message twitch.PrivateMessage) string {
-	args := strings.Split(message.Message[16:], " ")
-
-	id, err := c.twitchProvider.GetUserID(args[0])
-	if err != nil {
-		return `Couldn't find User-ID for "` + args[0] + `"`
-	}
-
-	err = c.fdmProvider.RegisterWebhook(id, message.Channel, message.User.Name)
-	if err != nil {
-		return "Error adding follow alert!"
-	}
-
-	return "Added follow alert for " + args[0] + "!"
-}
-
-func (c *CommandHandler) RemoveFollowAlertCommand(message twitch.PrivateMessage) string {
-	args := strings.Split(message.Message[19:], " ")
-
-	id, err := c.twitchProvider.GetUserID(args[0])
-	if err != nil {
-		return `Couldn't find User-ID for "` + args[0] + `"`
-	}
-
-	err = c.fdmProvider.RemoveWebhook(id, message.User.Name, message.Channel)
-	if err != nil {
-		return "Error removing follow alert!"
-	}
-
-	return "Removed follow alert for " + args[0] + "!"
-}
-
-func (c *CommandHandler) GetFollowAlertsCommand() string {
-	followWebhook, err := c.fdmProvider.GetWebhooks()
-	if err != nil {
-		return "Error getting Followalerts"
-	}
-
-	payload := "Total alerts: " + strconv.Itoa(len(followWebhook.Data)) + " Channels: "
-
-	users := make([]string, 0)
-
-	for _, webhook := range followWebhook.Data {
-		id := webhook.Condition.BroadcasterUserID
-		user, _ := c.twitchProvider.GetUser(id)
-		users = append(users, user)
-	}
-
-	for _, user := range users {
-		payload = payload + user + " "
-	}
-
-	return payload
-}
-
 func (c *CommandHandler) PingCommand(message twitch.PrivateMessage) string {
 	uptime := time.Since(c.startTime)
-	result := "Pong! Uptime: " + durafmt.Parse(uptime).LimitFirstN(2).String() + ","
+	result := "Uptime: " + durafmt.Parse(uptime).LimitFirstN(2).String() + " |"
 
-	apiUptime, err := c.fdmProvider.GetAPIUptime()
-	if err != nil {
-		result += " API-Uptime: Unavailable monkaS"
-	} else {
-		result += " API-Uptime: " + apiUptime + ","
-	}
+	result += " Commit: " + c.config.Git.Commit + " |"
+	result += " Branch: " + c.config.Git.Branch + " |"
 
-	result += " Commit: " + c.config.Git.Commit + ","
-	result += " Branch: " + c.config.Git.Branch + ","
-
-	latency := util.GetLatency(message)
-	result += " Latency to tmi: " + latency
+	result += " Latency to tmi: " + fmt.Sprint(c.latency)
 
 	return result
 }

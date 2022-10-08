@@ -7,6 +7,7 @@ linters:
   enable-all: true
   disable:
     - testpackage
+    - exhaustruct
     - exhaustivestruct
     - tagliatelle
     - maligned
@@ -16,3 +17,9 @@ linters:
     - golint
     - gomoddirectives
     - gochecknoglobals
+    - ifshort
+    - contextcheck
+    - rowserrcheck
+    - structcheck
+    - sqlclosecheck
+    - wastedassign

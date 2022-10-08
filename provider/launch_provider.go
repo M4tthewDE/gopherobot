@@ -20,7 +20,7 @@ func (s SpaceXProvider) GetNextLaunch() (NextLaunch, error) {
 
 	ctx := context.Background()
 
-	req, err := http.NewRequestWithContext(ctx, "GET", "https://api.spacexdata.com/v5/launches/next", nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://api.spacexdata.com/v5/launches/next", nil)
 	if err != nil {
 		return NextLaunch{}, fmt.Errorf("error getting next launch: %w", err)
 	}
