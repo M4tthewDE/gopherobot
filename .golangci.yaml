@@ -16,6 +16,7 @@ linters:
     - interfacer
     - golint
     - gomoddirectives
+    - gochecknoglobals
     - ifshort
     - contextcheck
     - rowserrcheck

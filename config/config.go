@@ -4,8 +4,12 @@ import (
 	"log"
 	"os"
 
-	"de.com.fdm/gopherobot/util"
 	"gopkg.in/yaml.v2"
+)
+
+var (
+	GitCommit string
+	GitBranch string
 )
 
 func GetConfig() *Config {
@@ -25,19 +29,8 @@ func GetConfig() *Config {
 
 	file.Close()
 
-	branch, err := util.GetBranch()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	config.Git.Branch = branch
-
-	commit, err := util.GetCommit()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	config.Git.Commit = commit
+	config.Git.Commit = GitCommit
+	config.Git.Branch = GitBranch
 
 	return &config
 }
