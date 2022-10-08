@@ -29,7 +29,6 @@ func NewBot(config *config.Config) *Bot {
 	bot.client.IrcAddress = "irc.chat.twitch.tv:443"
 	bot.pingClient.IrcAddress = "irc.chat.twitch.tv:443"
 
-
 	// lower PING interval for latency checking
 	bot.pingClient.IdlePingInterval = 5 * time.Second
 
@@ -104,12 +103,6 @@ func (b *Bot) doCommand(message twitch.PrivateMessage) {
 		b.client.Say(message.Channel, b.cmdHandler.UserIDCommand(message))
 	case "user":
 		b.client.Say(message.Channel, b.cmdHandler.UserCommand(message))
-	case "addfollowalert":
-		b.client.Say(message.Channel, b.cmdHandler.AddFollowAlertCommand(message))
-	case "removefollowalert":
-		b.client.Say(message.Channel, b.cmdHandler.RemoveFollowAlertCommand(message))
-	case "getfollowalerts":
-		b.client.Say(message.Channel, b.cmdHandler.GetFollowAlertsCommand())
 	case "ping":
 		b.client.Say(message.Channel, b.cmdHandler.PingCommand(message))
 	case "rawmsg":
