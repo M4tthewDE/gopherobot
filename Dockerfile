@@ -1,5 +1,5 @@
 FROM golang:latest
-MAINTAINER m4tthewde github.com/m4tthewde
+LABEL author="github.com/m4tthewde"
 WORKDIR /go/src/github.com/m4tthewde/gopherobot
 COPY . .
 RUN go mod download
