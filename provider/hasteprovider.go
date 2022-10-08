@@ -4,8 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 
@@ -25,7 +24,11 @@ func (h *HasteProvider) UploadToHaste(data string) string {
 	httpClient := &http.Client{}
 	ctx := context.Background()
 
-	req, err := http.NewRequestWithContext(ctx, "POST", h.Config.Haste.URL+"/documents", bytes.NewBuffer([]byte(data)))
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodPost,
+		h.Config.Haste.URL+"/documents",
+		bytes.NewBuffer([]byte(data)))
 	if err != nil {
 		log.Println("New Request error: " + err.Error())
 
@@ -42,22 +45,22 @@ func (h *HasteProvider) UploadToHaste(data string) string {
 	defer resp.Body.Close()
 
 	if resp.StatusCode < http.StatusOK || resp.StatusCode > http.StatusMultipleChoices {
-		log.Println(fmt.Sprintf("Error while uploading data: %d", resp.StatusCode))
+		log.Printf("Error while uploading data: %d", resp.StatusCode)
 
 		return ""
 	}
 
 	// error out if the invite isn't found or something else went wrong with the request
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Println(fmt.Sprintf("Error while reading response: %s", err.Error()))
+		log.Printf("Error while reading response: %s", err.Error())
 
 		return ""
 	}
 
 	var jsonResponse HasteResponseData
 	if err := json.Unmarshal(body, &jsonResponse); err != nil {
-		log.Println(fmt.Sprintf("Error while unmarshaling JSON response: %s", err.Error()))
+		log.Printf("Error while unmarshaling JSON response: %s", err.Error())
 
 		return ""
 	}
