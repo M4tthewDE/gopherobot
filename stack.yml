@@ -1,0 +1,14 @@
+version: '3.5'
+
+services:
+  gopherobot:
+    image: m4tthewde/gopherobot:latest
+    container_name: gopherobot
+    restart: always
+    network_mode: host
+    volumes:
+      - /PATH/TO/YOUR/config.yml:/config.yml
+        
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
