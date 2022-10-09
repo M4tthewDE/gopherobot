@@ -85,5 +85,7 @@ func (b *Bot) doCommand(message twitch.PrivateMessage) {
 		b.client.Say(message.Channel, commands.Echo(message))
 	case "ping":
 		b.client.Say(message.Channel, commands.Ping(b.startTime, b.latencyReader.latency, b.config))
+	case "improveemote":
+		b.client.Say(message.Channel, commands.ImproveEmote(message))
 	}
 }
