@@ -4,18 +4,19 @@ import (
 	"strings"
 	"time"
 
-	"de.com.fdm/gopherobot/cmd"
+	"de.com.fdm/gopherobot/commands"
 	"de.com.fdm/gopherobot/config"
 	"github.com/gempir/go-twitch-irc/v2"
 )
 
 type Bot struct {
-	config     *config.Config
-	cmdHandler *cmd.CommandHandler
-	client     *twitch.Client
-	pingClient *twitch.Client
-	channels   []string
-	lastPing   time.Time
+	config        *config.Config
+	client        *twitch.Client
+	pingClient    *twitch.Client
+	latencyReader *LatencyReader
+	channels      []string
+	lastPing      time.Time
+	startTime     time.Time
 }
 
 func NewBot(config *config.Config) *Bot {
@@ -32,15 +33,17 @@ func NewBot(config *config.Config) *Bot {
 	// lower PING interval for latency checking
 	bot.pingClient.IdlePingInterval = 5 * time.Second
 
-	bot.cmdHandler = cmd.NewCommandHandler(config, time.Now(), bot.client, &bot.channels)
-	go bot.cmdHandler.LatencyReader()
+	bot.latencyReader = NewLatencyReader()
+
+	bot.startTime = time.Now()
+
+	go bot.latencyReader.Read()
 
 	return &bot
 }
 
 func (b *Bot) Run() {
 	b.client.OnPrivateMessage(b.onMessage)
-	b.client.OnWhisperMessage(b.onWhisper)
 	b.pingClient.OnPongMessage(b.onPong)
 	b.pingClient.OnPingSent(b.onPingSent)
 
@@ -61,29 +64,11 @@ func (b *Bot) RunPingService() {
 }
 
 func (b *Bot) onPong(message twitch.PongMessage) {
-	b.cmdHandler.LatencyChannel <- time.Since(b.lastPing)
+	b.latencyReader.LatencyChannel <- time.Since(b.lastPing)
 }
 
 func (b *Bot) onPingSent() {
 	b.lastPing = time.Now()
-}
-
-func (b *Bot) onWhisper(message twitch.WhisperMessage) {
-	prefix := message.Message[0:1]
-
-	if prefix == b.config.Bot.Prefix && message.User.ID == "116672490" {
-		b.doWhisperCommand(message)
-	}
-}
-
-func (b *Bot) doWhisperCommand(message twitch.WhisperMessage) {
-	identifier := strings.Split(message.Message, " ")[0][1:]
-	switch identifier {
-	case "saveclip":
-		b.cmdHandler.SaveClipCommand(message)
-	case "revoke":
-		b.client.Say("gopherobot", b.cmdHandler.RevokeAuthCommand(message))
-	}
 }
 
 func (b *Bot) onMessage(message twitch.PrivateMessage) {
@@ -98,30 +83,8 @@ func (b *Bot) doCommand(message twitch.PrivateMessage) {
 	identifier := strings.Split(message.Message, " ")[0][1:]
 	switch identifier {
 	case "echo":
-		b.client.Say(message.Channel, b.cmdHandler.EchoCommand(message))
-	case "id":
-		b.client.Say(message.Channel, b.cmdHandler.UserIDCommand(message))
-	case "user":
-		b.client.Say(message.Channel, b.cmdHandler.UserCommand(message))
+		b.client.Say(message.Channel, commands.Echo(message))
 	case "ping":
-		b.client.Say(message.Channel, b.cmdHandler.PingCommand(message))
-	case "rawmsg":
-		b.client.Say(message.Channel, b.cmdHandler.RawMsgCommand(message.Raw))
-	case "tmpjoin":
-		b.client.Say(message.Channel, b.cmdHandler.TmpJoinCommand(message))
-	case "tmpleave":
-		b.client.Say(message.Channel, b.cmdHandler.TmpLeaveCommand(message))
-	case "getchannels":
-		b.client.Say(message.Channel, b.cmdHandler.GetChannelsCommand(message))
-	case "urlencode":
-		b.client.Say(message.Channel, b.cmdHandler.URLEncodeCommand(message))
-	case "urldecode":
-		b.client.Say(message.Channel, b.cmdHandler.URLDecodeCommand(message))
-	case "streaminfo":
-		b.client.Say(message.Channel, b.cmdHandler.StreamInfoCommand(message))
-	case "httpstatus":
-		b.client.Say(message.Channel, b.cmdHandler.HTTPStatusCommand(message))
-	case "nextlaunch":
-		b.client.Say(message.Channel, b.cmdHandler.NextLaunchCommand(message))
+		b.client.Say(message.Channel, commands.Ping(b.startTime, b.latencyReader.latency, b.config))
 	}
 }
