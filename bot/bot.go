@@ -31,26 +31,25 @@ func NewBot(config *config.Config) *Bot {
 	bot.pingClient.IrcAddress = "irc.chat.twitch.tv:443"
 
 	// lower PING interval for latency checking
-	bot.pingClient.IdlePingInterval = 5 * time.Second
-
-	bot.latencyReader = NewLatencyReader()
+	bot.pingClient.IdlePingInterval = 1 * time.Second
 
 	bot.startTime = time.Now()
 
-	go bot.latencyReader.Read()
+	bot.latencyReader = NewLatencyReader()
 
 	return &bot
 }
 
 func (b *Bot) Run() {
+	go b.latencyReader.Read()
+	go b.RunPingService()
+
 	b.client.OnPrivateMessage(b.onMessage)
 	b.pingClient.OnPongMessage(b.onPong)
 	b.pingClient.OnPingSent(b.onPingSent)
 
 	b.client.Join(b.config.Bot.Channels...)
 	b.channels = append(b.channels, b.config.Bot.Channels...)
-
-	go b.RunPingService()
 
 	if err := b.client.Connect(); err != nil {
 		panic(err)
