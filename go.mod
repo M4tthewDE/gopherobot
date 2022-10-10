@@ -9,4 +9,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 )
 
-require github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
+require (
+	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
+	github.com/h2non/bimg v1.1.9 // indirect
+)
