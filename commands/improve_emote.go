@@ -17,7 +17,7 @@ import (
 )
 
 func ImproveEmote(message twitch.PrivateMessage) string {
-	targetEmoteCode, err := getTargetEmoteCode(message)
+	targetEmoteCode, err := getTargetEmoteCode(message.Message)
 	if err != nil {
 		// TODO: this does not return anything
 		return err.Error()
@@ -89,8 +89,9 @@ func improveBttvEmote(emoteID string) (string, error) {
 
 var errNoEmoteProvided = errors.New("no emote provided")
 
-func getTargetEmoteCode(message twitch.PrivateMessage) (string, error) {
-	words := strings.Split(message.Message, " ")
+func getTargetEmoteCode(message string) (string, error) {
+	message = strings.TrimSpace(message)
+	words := strings.Split(message, " ")
 	if len(words) < 2 {
 		return "", errNoEmoteProvided
 	}
