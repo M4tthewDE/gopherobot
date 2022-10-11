@@ -33,58 +33,57 @@ func ImproveEmote(message twitch.PrivateMessage) string {
 	// check channel bttv emotes
 	for _, emote := range emotes.ChannelEmotes {
 		if emote.Code == targetEmoteCode {
-			result, err := improveBttvEmote(emote.Id)
+			_, err := improveBttvEmote(emote.Id)
 			if err != nil {
 				log.Println(err)
 				return "Error improving emote"
 			}
 
-			return result
+			return "DONE"
 		}
 	}
 
 	// check shared bttv emotes
 	for _, emote := range emotes.SharedEmotes {
 		if emote.Code == targetEmoteCode {
-			result, err := improveBttvEmote(emote.Id)
+			// FIXME: do something with result
+			_, err := improveBttvEmote(emote.Id)
 			if err != nil {
 				log.Println(err)
 				return "Error improving emote"
 			}
 
-			return result
+			return "DONE"
 		}
 	}
 
 	return "Improved"
 }
 
-func improveBttvEmote(emoteID string) (string, error) {
+func improveBttvEmote(emoteID string) ([]byte, error) {
 	// TODO: implement and test with various emotes
 	// do random transformations
 	// https://golangdocs.com/golang-image-processing
 
 	resp, err := http.Get("https://cdn.betterttv.net/emote/" + emoteID + "/3x")
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	buffer, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	img := bimg.NewImage(buffer)
 
 	newImage, err := img.Zoom(2)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	//TODO output isn't animated
-	bimg.Write("test.gif", newImage)
+	return newImage, nil
 
-	return "DONE", nil
 }
 
 var errNoEmoteProvided = errors.New("no emote provided")
