@@ -3,6 +3,7 @@ package commands
 import (
 	"errors"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -12,8 +13,8 @@ import (
 	_ "image/png"
 
 	"de.com.fdm/gopherobot/providers"
+	vips "github.com/davidbyttow/govips/v2/vips"
 	"github.com/gempir/go-twitch-irc/v2"
-	"github.com/h2non/bimg"
 )
 
 func ImproveEmote(message twitch.PrivateMessage) string {
@@ -46,8 +47,14 @@ func ImproveEmote(message twitch.PrivateMessage) string {
 	// check shared bttv emotes
 	for _, emote := range emotes.SharedEmotes {
 		if emote.Code == targetEmoteCode {
-			// FIXME: do something with result
-			_, err := improveBttvEmote(emote.Id)
+			newEmote, err := improveBttvEmote(emote.Id)
+			if err != nil {
+				log.Println(err)
+				return "Error improving emote"
+			}
+
+			//TODO: upload instead of saving
+			err = ioutil.WriteFile("new.gif", newEmote, 0644)
 			if err != nil {
 				log.Println(err)
 				return "Error improving emote"
@@ -75,15 +82,31 @@ func improveBttvEmote(emoteID string) ([]byte, error) {
 		return nil, err
 	}
 
-	img := bimg.NewImage(buffer)
+	vips.Startup(nil)
+	defer vips.Shutdown()
 
-	newImage, err := img.Zoom(2)
+	importParams := vips.NewImportParams()
+	// needed to import all pages (frames)
+	importParams.NumPages.Set(-1)
+
+	image, err := vips.LoadImageFromBuffer(buffer, importParams)
 	if err != nil {
 		return nil, err
 	}
 
-	return newImage, nil
+	err = image.Flip(vips.DirectionHorizontal)
+	if err != nil {
+		return nil, err
+	}
 
+	// TODO: apply modifers: zoom and speedup
+
+	modifiedBuffer, _, err := image.ExportNative()
+	if err != nil {
+		return nil, err
+	}
+
+	return modifiedBuffer, nil
 }
 
 var errNoEmoteProvided = errors.New("no emote provided")

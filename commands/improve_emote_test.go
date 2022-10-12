@@ -1,6 +1,8 @@
 package commands
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestGetTargetEmoteCode(t *testing.T) {
 	emoteCode, err := getTargetEmoteCode(",improveemote OMEGALUL")
