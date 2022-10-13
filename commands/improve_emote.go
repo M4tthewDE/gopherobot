@@ -2,15 +2,8 @@ package commands
 
 import (
 	"errors"
-	"io"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"strings"
-
-	_ "image/gif"
-	_ "image/jpeg"
-	_ "image/png"
 
 	"de.com.fdm/gopherobot/providers"
 	vips "github.com/davidbyttow/govips/v2/vips"
@@ -20,68 +13,68 @@ import (
 func ImproveEmote(message twitch.PrivateMessage) string {
 	targetEmoteCode, err := getTargetEmoteCode(message.Message)
 	if err != nil {
-		// TODO: this does not return anything
-		return err.Error()
+		log.Println(err)
+
+		return ""
 	}
 
-	// get emotes for channel
-	// TODO: add more emote providers
-	emotes, err := providers.GetBttvEmotes(message.RoomID)
+	// check bttv first
+	emoteBuffer, didFind, err := findBttvEmote(targetEmoteCode, message.Channel)
 	if err != nil {
-		return "Error getting emote"
+		log.Println(err)
+	}
+
+	if didFind {
+		_, err = modifyEmote(emoteBuffer)
+		if err != nil {
+			log.Println(err)
+
+			return "Error improving emote"
+		}
+	}
+
+	return "DONE"
+}
+
+var errFindingBttvEmote = errors.New("error finding bttv emote")
+
+func findBttvEmote(targetEmoteCode string, roomID string) ([]byte, bool, error) {
+	// get bttv emotes for channel
+	emotes, err := providers.GetBttvEmotes(roomID)
+	if err != nil {
+		return nil, false, errFindingBttvEmote
 	}
 
 	// check channel bttv emotes
 	for _, emote := range emotes.ChannelEmotes {
 		if emote.Code == targetEmoteCode {
-			_, err := improveBttvEmote(emote.Id)
+			emoteBuffer, err := providers.GetBttvEmote(emote.ID)
 			if err != nil {
-				log.Println(err)
-				return "Error improving emote"
+				return nil, false, errFindingBttvEmote
 			}
 
-			return "DONE"
+			return emoteBuffer, true, nil
 		}
 	}
 
 	// check shared bttv emotes
 	for _, emote := range emotes.SharedEmotes {
 		if emote.Code == targetEmoteCode {
-			newEmote, err := improveBttvEmote(emote.Id)
+			emoteBuffer, err := providers.GetBttvEmote(emote.ID)
 			if err != nil {
-				log.Println(err)
-				return "Error improving emote"
+				return nil, true, errFindingBttvEmote
 			}
 
-			//TODO: upload instead of saving
-			err = ioutil.WriteFile("new.gif", newEmote, 0644)
-			if err != nil {
-				log.Println(err)
-				return "Error improving emote"
-			}
-
-			return "DONE"
+			return emoteBuffer, true, nil
 		}
 	}
 
-	return "Improved"
+	return nil, false, nil
 }
 
-func improveBttvEmote(emoteID string) ([]byte, error) {
-	// TODO: implement and test with various emotes
-	// do random transformations
-	// https://golangdocs.com/golang-image-processing
+var errModifyingEmote = errors.New("failed to modify emote")
 
-	resp, err := http.Get("https://cdn.betterttv.net/emote/" + emoteID + "/3x")
-	if err != nil {
-		return nil, err
-	}
-
-	buffer, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
+func modifyEmote(emoteBuffer []byte) ([]byte, error) {
 	vips.Startup(nil)
 	defer vips.Shutdown()
 
@@ -89,19 +82,25 @@ func improveBttvEmote(emoteID string) ([]byte, error) {
 	// needed to import all pages (frames)
 	importParams.NumPages.Set(-1)
 
-	image, err := vips.LoadImageFromBuffer(buffer, importParams)
+	image, err := vips.LoadImageFromBuffer(emoteBuffer, importParams)
 	if err != nil {
-		return nil, err
+		log.Println(err)
+
+		return nil, errModifyingEmote
 	}
 
 	err = image.Flip(vips.DirectionHorizontal)
 	if err != nil {
-		return nil, err
+		log.Println(err)
+
+		return nil, errModifyingEmote
 	}
 
 	pageDelays, err := image.PageDelay()
 	if err != nil {
-		return nil, err
+		log.Println(err)
+
+		return nil, errModifyingEmote
 	}
 
 	// 2x the speed
@@ -110,17 +109,26 @@ func improveBttvEmote(emoteID string) ([]byte, error) {
 		newPageDelays[i] = delay / 4
 	}
 
-	image.SetPageDelay(newPageDelays)
+	err = image.SetPageDelay(newPageDelays)
+	if err != nil {
+		log.Println(err)
+
+		return nil, errModifyingEmote
+	}
 
 	// widen emote
 	err = image.ResizeWithVScale(2, 1, vips.KernelLanczos3)
 	if err != nil {
-		return nil, err
+		log.Println(err)
+
+		return nil, errModifyingEmote
 	}
 
 	modifiedBuffer, _, err := image.ExportNative()
 	if err != nil {
-		return nil, err
+		log.Println(err)
+
+		return nil, errModifyingEmote
 	}
 
 	return modifiedBuffer, nil
@@ -130,6 +138,7 @@ var errNoEmoteProvided = errors.New("no emote provided")
 
 func getTargetEmoteCode(message string) (string, error) {
 	message = strings.TrimSpace(message)
+
 	words := strings.Split(message, " ")
 	if len(words) < 2 {
 		return "", errNoEmoteProvided

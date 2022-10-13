@@ -2,9 +2,13 @@ package commands
 
 import (
 	"testing"
+
+	"de.com.fdm/gopherobot/providers"
 )
 
 func TestGetTargetEmoteCode(t *testing.T) {
+	t.Parallel()
+
 	emoteCode, err := getTargetEmoteCode(",improveemote OMEGALUL")
 	if err != nil {
 		t.Fatal(err)
@@ -26,9 +30,16 @@ func TestGetTargetEmoteCode(t *testing.T) {
 }
 
 func TestImproveBttvEmote(t *testing.T) {
+	t.Parallel()
+
 	emoteCode := "60c8d8bef8b3f62601c3e32b"
 
-	_, err := improveBttvEmote(emoteCode)
+	emoteBuffer, err := providers.GetBttvEmote(emoteCode)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = modifyEmote(emoteBuffer)
 	if err != nil {
 		t.Fatal(err)
 	}

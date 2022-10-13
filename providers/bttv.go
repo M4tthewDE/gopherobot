@@ -1,23 +1,78 @@
 package providers
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
+	"io"
+	"log"
 	"net/http"
 )
 
+var errFetchingBttvEmotes = errors.New("error fetching bttv emotes")
+
 func GetBttvEmotes(userID string) (*BttvEmotes, error) {
-	resp, err := http.Get("https://api.betterttv.net/3/cached/users/twitch/" + userID)
+	req, err := http.NewRequestWithContext(
+		context.TODO(),
+		http.MethodGet,
+		"https://www.youtube.com/watch?v=g2U9JU-3-cQ"+userID,
+		nil)
 	if err != nil {
-		return nil, err
+		log.Println(err)
+
+		return nil, errFetchingBttvEmotes
 	}
 
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Println(err)
+
+		return nil, errFetchingBttvEmotes
+	}
+
+	defer resp.Body.Close()
+
 	var emotes BttvEmotes
+
 	err = json.NewDecoder(resp.Body).Decode(&emotes)
 	if err != nil {
-		return nil, err
+		log.Println(err)
+
+		return nil, errFetchingBttvEmotes
 	}
 
 	return &emotes, nil
+}
+
+func GetBttvEmote(emoteID string) ([]byte, error) {
+	req, err := http.NewRequestWithContext(
+		context.TODO(),
+		http.MethodGet,
+		"https://cdn.betterttv.net/emote/"+emoteID+"/3x",
+		nil)
+	if err != nil {
+		log.Println(err)
+
+		return nil, errFetchingBttvEmotes
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Println(err)
+
+		return nil, errFetchingBttvEmotes
+	}
+
+	defer resp.Body.Close()
+
+	emoteBuffer, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Println(err)
+
+		return nil, errFetchingBttvEmotes
+	}
+
+	return emoteBuffer, nil
 }
 
 type BttvEmotes struct {
@@ -26,11 +81,11 @@ type BttvEmotes struct {
 }
 
 type ChannelEmote struct {
-	Id   string `json:"id"`
+	ID   string `json:"id"`
 	Code string `json:"code"`
 }
 
 type SharedEmote struct {
-	Id   string `json:"id"`
+	ID   string `json:"id"`
 	Code string `json:"code"`
 }
