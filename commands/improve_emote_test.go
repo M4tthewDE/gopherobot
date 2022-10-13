@@ -29,7 +29,7 @@ func TestGetTargetEmoteCode(t *testing.T) {
 	}
 }
 
-func TestImproveBttvEmote(t *testing.T) {
+func TestModifyEmote(t *testing.T) {
 	t.Parallel()
 
 	emoteCode := "60c8d8bef8b3f62601c3e32b"

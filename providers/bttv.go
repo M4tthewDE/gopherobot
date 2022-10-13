@@ -23,8 +23,6 @@ func GetBttvEmotes(userID string) (*BttvEmotes, error) {
 		return nil, errFetchingBttvEmotes
 	}
 
-	req.Header.Add("Content-Type", "multipart/form-data")
-
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Println(err)
