@@ -107,10 +107,16 @@ func improveBttvEmote(emoteID string) ([]byte, error) {
 	// 2x the speed
 	newPageDelays := make([]int, len(pageDelays))
 	for i, delay := range pageDelays {
-		newPageDelays[i] = delay / 2
+		newPageDelays[i] = delay / 4
 	}
 
 	image.SetPageDelay(newPageDelays)
+
+	// widen emote
+	err = image.ResizeWithVScale(2, 1, vips.KernelLanczos3)
+	if err != nil {
+		return nil, err
+	}
 
 	modifiedBuffer, _, err := image.ExportNative()
 	if err != nil {
