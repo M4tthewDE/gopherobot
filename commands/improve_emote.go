@@ -99,7 +99,18 @@ func improveBttvEmote(emoteID string) ([]byte, error) {
 		return nil, err
 	}
 
-	// TODO: apply modifers: zoom and speedup
+	pageDelays, err := image.PageDelay()
+	if err != nil {
+		return nil, err
+	}
+
+	// 2x the speed
+	newPageDelays := make([]int, len(pageDelays))
+	for i, delay := range pageDelays {
+		newPageDelays[i] = delay / 2
+	}
+
+	image.SetPageDelay(newPageDelays)
 
 	modifiedBuffer, _, err := image.ExportNative()
 	if err != nil {
