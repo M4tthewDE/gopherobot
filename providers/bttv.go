@@ -15,13 +15,15 @@ func GetBttvEmotes(userID string) (*BttvEmotes, error) {
 	req, err := http.NewRequestWithContext(
 		context.TODO(),
 		http.MethodGet,
-		"https://www.youtube.com/watch?v=g2U9JU-3-cQ"+userID,
+		"https://api.betterttv.net/3/cached/users/twitch/"+userID,
 		nil)
 	if err != nil {
 		log.Println(err)
 
 		return nil, errFetchingBttvEmotes
 	}
+
+	req.Header.Add("Content-Type", "multipart/form-data")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {

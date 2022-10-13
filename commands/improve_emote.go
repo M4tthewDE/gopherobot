@@ -19,18 +19,27 @@ func ImproveEmote(message twitch.PrivateMessage) string {
 	}
 
 	// check bttv first
-	emoteBuffer, didFind, err := findBttvEmote(targetEmoteCode, message.Channel)
+	emoteBuffer, didFind, err := findBttvEmote(targetEmoteCode, message.RoomID)
 	if err != nil {
 		log.Println(err)
 	}
 
 	if didFind {
-		_, err = modifyEmote(emoteBuffer)
+		newEmoteBuffer, err := modifyEmote(emoteBuffer)
 		if err != nil {
 			log.Println(err)
 
 			return "Error improving emote"
 		}
+
+		url, err := providers.UploadToKappaLol(newEmoteBuffer)
+		if err != nil {
+			log.Println(err)
+
+			return "Error improving emote"
+		}
+
+		return url
 	}
 
 	return "DONE"
