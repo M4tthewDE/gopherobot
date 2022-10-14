@@ -3,8 +3,8 @@ package providers
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
-	"io"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -16,14 +16,19 @@ func UploadToKappaLol(data []byte) (string, error) {
 	body := bytes.NewBuffer(data)
 	mp := multipart.NewWriter(body)
 
-	part, err := mp.CreateFormFile("@file", "NewEmoteTEST123")
+	_, err := mp.CreateFormFile("file", "doesThisEvenMatter.gif")
 	if err != nil {
 		log.Println(err)
 
 		return "", errUploadKappaLol
 	}
 
-	io.Copy(part, body)
+	err = mp.Close()
+	if err != nil {
+		log.Println(err)
+
+		return "", errUploadKappaLol
+	}
 
 	req, err := http.NewRequestWithContext(
 		context.TODO(),
@@ -38,6 +43,8 @@ func UploadToKappaLol(data []byte) (string, error) {
 
 	req.Header.Add("Content-Type", mp.FormDataContentType())
 
+	log.Printf("%+v\n", req)
+
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Println(err)
@@ -47,15 +54,16 @@ func UploadToKappaLol(data []byte) (string, error) {
 
 	defer resp.Body.Close()
 
-	urlBuffer, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Println(err)
+	var kappaLolResponse KappaLolResponse
 
+	err = json.NewDecoder(resp.Body).Decode(&kappaLolResponse)
+	if err != nil {
 		return "", errUploadKappaLol
 	}
 
-	log.Println(string(urlBuffer))
+	return kappaLolResponse.Link, nil
+}
 
-	return "TEST", nil
-
+type KappaLolResponse struct {
+	Link string `json:"link"`
 }
