@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"testing"
 
 	"de.com.fdm/gopherobot/providers"
@@ -34,7 +35,7 @@ func TestModifyEmote(t *testing.T) {
 
 	emoteCode := "60c8d8bef8b3f62601c3e32b"
 
-	emoteBuffer, err := providers.GetBttvEmote(emoteCode)
+	emoteBuffer, err := providers.GetBttvEmote(context.Background(), emoteCode)
 	if err != nil {
 		t.Fatal(err)
 	}

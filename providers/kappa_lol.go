@@ -4,58 +4,45 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io"
-	"log"
 	"mime/multipart"
 	"net/http"
 )
 
-var ErrUploadKappaLol = errors.New("failed to upload to kappa.lol")
-
-func UploadToKappaLol(data []byte) (string, error) {
+func UploadToKappaLol(ctx context.Context, data []byte) (string, error) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
 	part, err := writer.CreateFormFile("file", "whoasked")
 	if err != nil {
-		log.Println(err)
-
-		return "", ErrUploadKappaLol
+		return "", fmt.Errorf("creating form error: %w", err)
 	}
 
 	_, err = io.Copy(part, bytes.NewBuffer(data))
 	if err != nil {
-		log.Println(err)
-
-		return "", ErrUploadKappaLol
+		return "", fmt.Errorf("form file copy error: %w", err)
 	}
 
 	err = writer.Close()
 	if err != nil {
-		log.Println(err)
-
-		return "", ErrUploadKappaLol
+		return "", fmt.Errorf("writer close error: %w", err)
 	}
 
 	req, err := http.NewRequestWithContext(
-		context.TODO(),
+		ctx,
 		http.MethodPost,
 		"https://kappa.lol/api/upload",
 		body)
 	if err != nil {
-		log.Println(err)
-
-		return "", ErrUploadKappaLol
+		return "", fmt.Errorf("request build error: %w", err)
 	}
 
 	req.Header.Add("Content-Type", writer.FormDataContentType())
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		log.Println(err)
-
-		return "", ErrUploadKappaLol
+		return "", fmt.Errorf("fetch error: %w", err)
 	}
 
 	defer resp.Body.Close()
@@ -64,7 +51,7 @@ func UploadToKappaLol(data []byte) (string, error) {
 
 	err = json.NewDecoder(resp.Body).Decode(&kappaLolResponse)
 	if err != nil {
-		return "", ErrUploadKappaLol
+		return "", fmt.Errorf("json decode error: %w", err)
 	}
 
 	return kappaLolResponse.Link, nil

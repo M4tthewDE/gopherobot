@@ -1,8 +1,9 @@
 package commands
 
 import (
+	"context"
 	"errors"
-	"log"
+	"fmt"
 	"strings"
 
 	"de.com.fdm/gopherobot/providers"
@@ -10,80 +11,68 @@ import (
 	"github.com/gempir/go-twitch-irc/v2"
 )
 
-var errMessage = "Error improving emote"
+var ErrEmoteNotFound = errors.New("emote not found")
 
-func ImproveEmote(message twitch.PrivateMessage) string {
+func ImproveEmote(ctx context.Context, message twitch.PrivateMessage) (string, error) {
 	targetEmoteCode, err := getTargetEmoteCode(message.Message)
 	if err != nil {
-		log.Println(err)
-
-		return ""
+		return "", fmt.Errorf("get target emote code error: %w", err)
 	}
 
 	// check bttv first
-	emoteBuffer, didFind, err := findBttvEmote(targetEmoteCode, message.RoomID)
+	emoteBuffer, didFind, err := findBttvEmote(ctx, targetEmoteCode, message.RoomID)
 	if err != nil {
-		log.Println(err)
+		return "", fmt.Errorf("find bttv emote error: %w", err)
 	}
 
 	if didFind {
 		newEmoteBuffer, err := modifyEmote(emoteBuffer)
 		if err != nil {
-			log.Println(err)
-
-			return errMessage
+			return "", fmt.Errorf("modify emote error: %w", err)
 		}
 
-		url, err := providers.UploadToKappaLol(newEmoteBuffer)
+		url, err := providers.UploadToKappaLol(ctx, newEmoteBuffer)
 		if err != nil {
-			log.Println(err)
-
-			return errMessage
+			return "", fmt.Errorf("upload to kappa.lol error: %w", err)
 		}
 
-		return url
+		return url, nil
 	}
 
 	// check 7tv
-	emoteBuffer, didFind, err = findSevenTvEmote(targetEmoteCode, message.RoomID)
+	emoteBuffer, didFind, err = findSevenTvEmote(ctx, targetEmoteCode, message.RoomID)
 	if err != nil {
-		log.Println(err)
+		return "", fmt.Errorf("find 7tv emote error: %w", err)
 	}
 
 	if didFind {
 		newEmoteBuffer, err := modifyEmote(emoteBuffer)
 		if err != nil {
-			log.Println(err)
-
-			return errMessage
+			return "", fmt.Errorf("modify emote error: %w", err)
 		}
 
-		url, err := providers.UploadToKappaLol(newEmoteBuffer)
+		url, err := providers.UploadToKappaLol(ctx, newEmoteBuffer)
 		if err != nil {
-			log.Println(err)
-
-			return errMessage
+			return "", fmt.Errorf("upload to kappa.lol error: %w", err)
 		}
 
-		return url
+		return url, nil
 	}
 
-	return "Emote not found"
+	return "", ErrEmoteNotFound
 }
 
-var ErrFindingSevenTvEmote = errors.New("error finding 7tv emote")
-
-func findSevenTvEmote(targetEmoteName string, roomID string) ([]byte, bool, error) {
-	emotes, err := providers.GetSevenTvEmotes(roomID)
+func findSevenTvEmote(ctx context.Context, targetEmoteName string, roomID string) ([]byte, bool, error) {
+	emotes, err := providers.GetSevenTvEmotes(ctx, roomID)
 	if err != nil {
-		return nil, false, ErrFindingSevenTvEmote
+		return nil, false, fmt.Errorf("getting 7tv emotes error: %w", err)
 	}
 
 	for _, emote := range emotes {
 		if emote.Name == targetEmoteName {
-			emoteBuffer, err := providers.GetSevenTvEmote(emote.ID)
+			emoteBuffer, err := providers.GetSevenTvEmote(ctx, emote.ID)
 			if err != nil {
-				return nil, false, ErrFindingSevenTvEmote
+				return nil, false, fmt.Errorf("getting 7tv emote error: %w", err)
 			}
 
 			return emoteBuffer, true, nil
@@ -95,19 +84,19 @@ func findSevenTvEmote(targetEmoteName string, roomID string) ([]byte, bool, erro
 
 var ErrFindingBttvEmote = errors.New("error finding bttv emote")
 
-func findBttvEmote(targetEmoteCode string, roomID string) ([]byte, bool, error) {
+func findBttvEmote(ctx context.Context, targetEmoteCode string, roomID string) ([]byte, bool, error) {
 	// get bttv emotes for channel
-	emotes, err := providers.GetBttvEmotes(roomID)
+	emotes, err := providers.GetBttvEmotes(ctx, roomID)
 	if err != nil {
-		return nil, false, ErrFindingBttvEmote
+		return nil, false, fmt.Errorf("getting bttv emotes error: %w", err)
 	}
 
 	// check channel bttv emotes
 	for _, emote := range emotes.ChannelEmotes {
 		if emote.Code == targetEmoteCode {
-			emoteBuffer, err := providers.GetBttvEmote(emote.ID)
+			emoteBuffer, err := providers.GetBttvEmote(ctx, emote.ID)
 			if err != nil {
-				return nil, false, ErrFindingBttvEmote
+				return nil, false, fmt.Errorf("finding bttv emote error: %w", err)
 			}
 
 			return emoteBuffer, true, nil
@@ -117,9 +106,9 @@ func findBttvEmote(targetEmoteCode string, roomID string) ([]byte, bool, error) 
 	// check shared bttv emotes
 	for _, emote := range emotes.SharedEmotes {
 		if emote.Code == targetEmoteCode {
-			emoteBuffer, err := providers.GetBttvEmote(emote.ID)
+			emoteBuffer, err := providers.GetBttvEmote(ctx, emote.ID)
 			if err != nil {
-				return nil, true, ErrFindingBttvEmote
+				return nil, false, fmt.Errorf("finding bttv emote error: %w", err)
 			}
 
 			return emoteBuffer, true, nil
@@ -129,8 +118,6 @@ func findBttvEmote(targetEmoteCode string, roomID string) ([]byte, bool, error) 
 	return nil, false, nil
 }
 
-var ErrModifyingEmote = errors.New("failed to modify emote")
-
 func modifyEmote(emoteBuffer []byte) ([]byte, error) {
 	importParams := vips.NewImportParams()
 	// needed to import all pages (frames)
@@ -138,16 +125,12 @@ func modifyEmote(emoteBuffer []byte) ([]byte, error) {
 
 	image, err := vips.LoadImageFromBuffer(emoteBuffer, importParams)
 	if err != nil {
-		log.Println(err)
-
-		return nil, ErrModifyingEmote
+		return nil, fmt.Errorf("load image error: %w", err)
 	}
 
 	pageDelays, err := image.PageDelay()
 	if err != nil {
-		log.Println(err)
-
-		return nil, ErrModifyingEmote
+		return nil, fmt.Errorf("get page delay error: %w", err)
 	}
 
 	// 2x the speed
@@ -165,24 +148,18 @@ func modifyEmote(emoteBuffer []byte) ([]byte, error) {
 
 	err = image.SetPageDelay(newPageDelays)
 	if err != nil {
-		log.Println(err)
-
-		return nil, ErrModifyingEmote
+		return nil, fmt.Errorf("set page delay error: %w", err)
 	}
 
 	// widen emote
 	err = image.ResizeWithVScale(2, 1, vips.KernelLanczos3)
 	if err != nil {
-		log.Println(err)
-
-		return nil, ErrModifyingEmote
+		return nil, fmt.Errorf("resize error: %w", err)
 	}
 
 	modifiedBuffer, _, err := image.ExportNative()
 	if err != nil {
-		log.Println(err)
-
-		return nil, ErrModifyingEmote
+		return nil, fmt.Errorf("export error: %w", err)
 	}
 
 	return modifiedBuffer, nil

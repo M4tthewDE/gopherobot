@@ -1,7 +1,10 @@
 package bot
 
 import (
+	"context"
+	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -78,10 +81,28 @@ func (b *Bot) onPingSent() {
 }
 
 func (b *Bot) onMessage(message twitch.PrivateMessage) {
+	commandDeadline := time.Second * 10
 	prefix := message.Message[0:1]
 
-	if prefix == b.config.Bot.Prefix && message.User.ID == "116672490" {
-		b.doCommand(message)
+	if prefix != b.config.Bot.Prefix || message.User.ID != "116672490" {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), commandDeadline)
+
+	defer cancel()
+
+	result, err := b.doCommand(ctx, message)
+	if err != nil {
+		log.Println(err)
+
+		if errors.Is(err, context.DeadlineExceeded) {
+			b.sendMessage(message.Channel, "Command execution deadline exceeded")
+		} else {
+			b.sendMessage(message.Channel, "Error during command execution")
+		}
+	} else {
+		b.sendMessage(message.Channel, result)
 	}
 }
 
@@ -93,14 +114,21 @@ func (b *Bot) sendMessage(channel string, message string) {
 	}
 }
 
-func (b *Bot) doCommand(message twitch.PrivateMessage) {
+func (b *Bot) doCommand(ctx context.Context, message twitch.PrivateMessage) (string, error) {
 	identifier := strings.Split(message.Message, " ")[0][1:]
 	switch identifier {
 	case "echo":
-		b.sendMessage(message.Channel, commands.Echo(message))
+		return commands.Echo(message), nil
 	case "ping":
-		b.sendMessage(message.Channel, commands.Ping(b.startTime, b.latencyReader.latency, b.config))
+		return commands.Ping(b.startTime, b.latencyReader.latency, b.config), nil
 	case "improveemote":
-		b.sendMessage(message.Channel, commands.ImproveEmote(message))
+		result, err := commands.ImproveEmote(ctx, message)
+		if err != nil {
+			return "", fmt.Errorf("improve emote error: %w", err)
+		}
+
+		return result, nil
 	}
+
+	return "Command not found", nil
 }

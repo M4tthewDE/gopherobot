@@ -3,31 +3,24 @@ package providers
 import (
 	"context"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io"
-	"log"
 	"net/http"
 )
 
-var ErrFetchingBttvEmotes = errors.New("error fetching bttv emotes")
-
-func GetBttvEmotes(userID string) (*BttvEmotes, error) {
+func GetBttvEmotes(ctx context.Context, userID string) (*BttvEmotes, error) {
 	req, err := http.NewRequestWithContext(
-		context.TODO(),
+		ctx,
 		http.MethodGet,
 		"https://api.betterttv.net/3/cached/users/twitch/"+userID,
 		nil)
 	if err != nil {
-		log.Println(err)
-
-		return nil, ErrFetchingBttvEmotes
+		return nil, fmt.Errorf("request build error: %w", err)
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		log.Println(err)
-
-		return nil, ErrFetchingBttvEmotes
+		return nil, fmt.Errorf("fetch error: %w", err)
 	}
 
 	defer resp.Body.Close()
@@ -36,40 +29,32 @@ func GetBttvEmotes(userID string) (*BttvEmotes, error) {
 
 	err = json.NewDecoder(resp.Body).Decode(&emotes)
 	if err != nil {
-		log.Println(err)
-
-		return nil, ErrFetchingBttvEmotes
+		return nil, fmt.Errorf("json decode error: %w", err)
 	}
 
 	return &emotes, nil
 }
 
-func GetBttvEmote(emoteID string) ([]byte, error) {
+func GetBttvEmote(ctx context.Context, emoteID string) ([]byte, error) {
 	req, err := http.NewRequestWithContext(
-		context.TODO(),
+		ctx,
 		http.MethodGet,
 		"https://cdn.betterttv.net/emote/"+emoteID+"/3x",
 		nil)
 	if err != nil {
-		log.Println(err)
-
-		return nil, ErrFetchingBttvEmotes
+		return nil, fmt.Errorf("request build error: %w", err)
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		log.Println(err)
-
-		return nil, ErrFetchingBttvEmotes
+		return nil, fmt.Errorf("fetch error: %w", err)
 	}
 
 	defer resp.Body.Close()
 
 	emoteBuffer, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Println(err)
-
-		return nil, ErrFetchingBttvEmotes
+		return nil, fmt.Errorf("emote read error: %w", err)
 	}
 
 	return emoteBuffer, nil
