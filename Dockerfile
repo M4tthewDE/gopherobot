@@ -4,7 +4,7 @@ LABEL author="github.com/m4tthewde"
 WORKDIR /go/src/github.com/m4tthewde/gopherobot
 COPY . .
 RUN go mod download
-RUN apk add --no-cache git make
+RUN apk add --no-cache git make vips
 RUN make build
 
 FROM alpine:latest
