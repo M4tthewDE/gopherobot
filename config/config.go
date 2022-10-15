@@ -39,6 +39,7 @@ type Config struct {
 	Bot struct {
 		Channels []string `yaml:"channels,flow"`
 		Prefix   string   `yaml:"prefix"`
+		Profile  string   `yaml:"profile"`
 	} `yaml:"bot"`
 	API struct {
 		Host string `yaml:"host"`

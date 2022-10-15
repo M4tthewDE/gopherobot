@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -50,7 +51,7 @@ func (b *Bot) Run() {
 
 	b.client.OnConnect(func() {
 		for _, channel := range b.channels {
-			b.client.Say(channel, "Restarted...")
+			b.sendMessage(channel, "Restarted...")
 		}
 	})
 
@@ -84,14 +85,22 @@ func (b *Bot) onMessage(message twitch.PrivateMessage) {
 	}
 }
 
+func (b *Bot) sendMessage(channel string, message string) {
+	if b.config.Bot.Profile == "PROD" {
+		b.client.Say(channel, message)
+	} else {
+		b.client.Say(channel, fmt.Sprintf("[%s] %s", b.config.Bot.Profile, message))
+	}
+}
+
 func (b *Bot) doCommand(message twitch.PrivateMessage) {
 	identifier := strings.Split(message.Message, " ")[0][1:]
 	switch identifier {
 	case "echo":
-		b.client.Say(message.Channel, commands.Echo(message))
+		b.sendMessage(message.Channel, commands.Echo(message))
 	case "ping":
-		b.client.Say(message.Channel, commands.Ping(b.startTime, b.latencyReader.latency, b.config))
+		b.sendMessage(message.Channel, commands.Ping(b.startTime, b.latencyReader.latency, b.config))
 	case "improveemote":
-		b.client.Say(message.Channel, commands.ImproveEmote(message))
+		b.sendMessage(message.Channel, commands.ImproveEmote(message))
 	}
 }
