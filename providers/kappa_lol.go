@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -13,17 +14,24 @@ import (
 var errUploadKappaLol = errors.New("failed to upload to kappa.lol")
 
 func UploadToKappaLol(data []byte) (string, error) {
-	body := bytes.NewBuffer(data)
-	mp := multipart.NewWriter(body)
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
 
-	_, err := mp.CreateFormFile("file", "doesThisEvenMatter.gif")
+	part, err := writer.CreateFormFile("file", "whoasked")
 	if err != nil {
 		log.Println(err)
 
 		return "", errUploadKappaLol
 	}
 
-	err = mp.Close()
+	_, err = io.Copy(part, bytes.NewBuffer(data))
+	if err != nil {
+		log.Println(err)
+
+		return "", errUploadKappaLol
+	}
+
+	err = writer.Close()
 	if err != nil {
 		log.Println(err)
 
@@ -41,9 +49,7 @@ func UploadToKappaLol(data []byte) (string, error) {
 		return "", errUploadKappaLol
 	}
 
-	req.Header.Add("Content-Type", mp.FormDataContentType())
-
-	log.Printf("%+v\n", req)
+	req.Header.Add("Content-Type", writer.FormDataContentType())
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {

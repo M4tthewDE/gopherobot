@@ -98,13 +98,6 @@ func modifyEmote(emoteBuffer []byte) ([]byte, error) {
 		return nil, errModifyingEmote
 	}
 
-	err = image.Flip(vips.DirectionHorizontal)
-	if err != nil {
-		log.Println(err)
-
-		return nil, errModifyingEmote
-	}
-
 	pageDelays, err := image.PageDelay()
 	if err != nil {
 		log.Println(err)
