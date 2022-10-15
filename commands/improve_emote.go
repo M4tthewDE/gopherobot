@@ -71,19 +71,19 @@ func ImproveEmote(message twitch.PrivateMessage) string {
 	return "Emote not found"
 }
 
-var errFindingSevenTvEmote = errors.New("error finding 7tv emote")
+var ErrFindingSevenTvEmote = errors.New("error finding 7tv emote")
 
 func findSevenTvEmote(targetEmoteName string, roomID string) ([]byte, bool, error) {
 	emotes, err := providers.GetSevenTvEmotes(roomID)
 	if err != nil {
-		return nil, false, errFindingSevenTvEmote
+		return nil, false, ErrFindingSevenTvEmote
 	}
 
 	for _, emote := range emotes {
 		if emote.Name == targetEmoteName {
 			emoteBuffer, err := providers.GetSevenTvEmote(emote.ID)
 			if err != nil {
-				return nil, false, errFindingSevenTvEmote
+				return nil, false, ErrFindingSevenTvEmote
 			}
 
 			return emoteBuffer, true, nil
@@ -93,13 +93,13 @@ func findSevenTvEmote(targetEmoteName string, roomID string) ([]byte, bool, erro
 	return nil, false, nil
 }
 
-var errFindingBttvEmote = errors.New("error finding bttv emote")
+var ErrFindingBttvEmote = errors.New("error finding bttv emote")
 
 func findBttvEmote(targetEmoteCode string, roomID string) ([]byte, bool, error) {
 	// get bttv emotes for channel
 	emotes, err := providers.GetBttvEmotes(roomID)
 	if err != nil {
-		return nil, false, errFindingBttvEmote
+		return nil, false, ErrFindingBttvEmote
 	}
 
 	// check channel bttv emotes
@@ -107,7 +107,7 @@ func findBttvEmote(targetEmoteCode string, roomID string) ([]byte, bool, error) 
 		if emote.Code == targetEmoteCode {
 			emoteBuffer, err := providers.GetBttvEmote(emote.ID)
 			if err != nil {
-				return nil, false, errFindingBttvEmote
+				return nil, false, ErrFindingBttvEmote
 			}
 
 			return emoteBuffer, true, nil
@@ -119,7 +119,7 @@ func findBttvEmote(targetEmoteCode string, roomID string) ([]byte, bool, error) 
 		if emote.Code == targetEmoteCode {
 			emoteBuffer, err := providers.GetBttvEmote(emote.ID)
 			if err != nil {
-				return nil, true, errFindingBttvEmote
+				return nil, true, ErrFindingBttvEmote
 			}
 
 			return emoteBuffer, true, nil
@@ -129,7 +129,7 @@ func findBttvEmote(targetEmoteCode string, roomID string) ([]byte, bool, error) 
 	return nil, false, nil
 }
 
-var errModifyingEmote = errors.New("failed to modify emote")
+var ErrModifyingEmote = errors.New("failed to modify emote")
 
 func modifyEmote(emoteBuffer []byte) ([]byte, error) {
 	importParams := vips.NewImportParams()
@@ -140,14 +140,14 @@ func modifyEmote(emoteBuffer []byte) ([]byte, error) {
 	if err != nil {
 		log.Println(err)
 
-		return nil, errModifyingEmote
+		return nil, ErrModifyingEmote
 	}
 
 	pageDelays, err := image.PageDelay()
 	if err != nil {
 		log.Println(err)
 
-		return nil, errModifyingEmote
+		return nil, ErrModifyingEmote
 	}
 
 	// 2x the speed
@@ -167,7 +167,7 @@ func modifyEmote(emoteBuffer []byte) ([]byte, error) {
 	if err != nil {
 		log.Println(err)
 
-		return nil, errModifyingEmote
+		return nil, ErrModifyingEmote
 	}
 
 	// widen emote
@@ -175,27 +175,27 @@ func modifyEmote(emoteBuffer []byte) ([]byte, error) {
 	if err != nil {
 		log.Println(err)
 
-		return nil, errModifyingEmote
+		return nil, ErrModifyingEmote
 	}
 
 	modifiedBuffer, _, err := image.ExportNative()
 	if err != nil {
 		log.Println(err)
 
-		return nil, errModifyingEmote
+		return nil, ErrModifyingEmote
 	}
 
 	return modifiedBuffer, nil
 }
 
-var errNoEmoteProvided = errors.New("no emote provided")
+var ErrNoEmoteProvided = errors.New("no emote provided")
 
 func getTargetEmoteCode(message string) (string, error) {
 	message = strings.TrimSpace(message)
 
 	words := strings.Split(message, " ")
 	if len(words) < 2 {
-		return "", errNoEmoteProvided
+		return "", ErrNoEmoteProvided
 	}
 
 	return words[1], nil

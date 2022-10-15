@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-var errFetchingSevenTvEmotes = errors.New("error fetching 7tv emotes")
+var ErrFetchingSevenTvEmotes = errors.New("error fetching 7tv emotes")
 
 func GetSevenTvEmotes(userID string) ([]SevenTvEmote, error) {
 	req, err := http.NewRequestWithContext(
@@ -21,14 +21,14 @@ func GetSevenTvEmotes(userID string) ([]SevenTvEmote, error) {
 	if err != nil {
 		log.Println(err)
 
-		return nil, errFetchingSevenTvEmotes
+		return nil, ErrFetchingSevenTvEmotes
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Println(err)
 
-		return nil, errFetchingSevenTvEmotes
+		return nil, ErrFetchingSevenTvEmotes
 	}
 
 	defer resp.Body.Close()
@@ -39,7 +39,7 @@ func GetSevenTvEmotes(userID string) ([]SevenTvEmote, error) {
 	if err != nil {
 		log.Println(err)
 
-		return nil, errFetchingSevenTvEmotes
+		return nil, ErrFetchingSevenTvEmotes
 	}
 
 	return emotes, nil
@@ -54,14 +54,14 @@ func GetSevenTvEmote(id string) ([]byte, error) {
 	if err != nil {
 		log.Println(err)
 
-		return nil, errFetchingSevenTvEmotes
+		return nil, ErrFetchingSevenTvEmotes
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Println(err)
 
-		return nil, errFetchingSevenTvEmotes
+		return nil, ErrFetchingSevenTvEmotes
 	}
 
 	defer resp.Body.Close()
@@ -70,7 +70,7 @@ func GetSevenTvEmote(id string) ([]byte, error) {
 	if err != nil {
 		log.Println(err)
 
-		return nil, errFetchingSevenTvEmotes
+		return nil, ErrFetchingSevenTvEmotes
 	}
 
 	return emoteBuffer, nil

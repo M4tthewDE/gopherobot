@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-var errFetchingBttvEmotes = errors.New("error fetching bttv emotes")
+var ErrFetchingBttvEmotes = errors.New("error fetching bttv emotes")
 
 func GetBttvEmotes(userID string) (*BttvEmotes, error) {
 	req, err := http.NewRequestWithContext(
@@ -20,14 +20,14 @@ func GetBttvEmotes(userID string) (*BttvEmotes, error) {
 	if err != nil {
 		log.Println(err)
 
-		return nil, errFetchingBttvEmotes
+		return nil, ErrFetchingBttvEmotes
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Println(err)
 
-		return nil, errFetchingBttvEmotes
+		return nil, ErrFetchingBttvEmotes
 	}
 
 	defer resp.Body.Close()
@@ -38,7 +38,7 @@ func GetBttvEmotes(userID string) (*BttvEmotes, error) {
 	if err != nil {
 		log.Println(err)
 
-		return nil, errFetchingBttvEmotes
+		return nil, ErrFetchingBttvEmotes
 	}
 
 	return &emotes, nil
@@ -53,14 +53,14 @@ func GetBttvEmote(emoteID string) ([]byte, error) {
 	if err != nil {
 		log.Println(err)
 
-		return nil, errFetchingBttvEmotes
+		return nil, ErrFetchingBttvEmotes
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Println(err)
 
-		return nil, errFetchingBttvEmotes
+		return nil, ErrFetchingBttvEmotes
 	}
 
 	defer resp.Body.Close()
@@ -69,7 +69,7 @@ func GetBttvEmote(emoteID string) ([]byte, error) {
 	if err != nil {
 		log.Println(err)
 
-		return nil, errFetchingBttvEmotes
+		return nil, ErrFetchingBttvEmotes
 	}
 
 	return emoteBuffer, nil
