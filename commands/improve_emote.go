@@ -10,6 +10,8 @@ import (
 	"github.com/gempir/go-twitch-irc/v2"
 )
 
+var errMessage = "Error improving emote"
+
 func ImproveEmote(message twitch.PrivateMessage) string {
 	targetEmoteCode, err := getTargetEmoteCode(message.Message)
 	if err != nil {
@@ -29,20 +31,66 @@ func ImproveEmote(message twitch.PrivateMessage) string {
 		if err != nil {
 			log.Println(err)
 
-			return "Error improving emote"
+			return errMessage
 		}
 
 		url, err := providers.UploadToKappaLol(newEmoteBuffer)
 		if err != nil {
 			log.Println(err)
 
-			return "Error improving emote"
+			return errMessage
+		}
+
+		return url
+	}
+
+	// check 7tv
+	emoteBuffer, didFind, err = findSevenTvEmote(targetEmoteCode, message.RoomID)
+	if err != nil {
+		log.Println(err)
+	}
+
+	if didFind {
+		newEmoteBuffer, err := modifyEmote(emoteBuffer)
+		if err != nil {
+			log.Println(err)
+
+			return errMessage
+		}
+
+		url, err := providers.UploadToKappaLol(newEmoteBuffer)
+		if err != nil {
+			log.Println(err)
+
+			return errMessage
 		}
 
 		return url
 	}
 
 	return "DONE"
+}
+
+var errFindingSevenTvEmote = errors.New("error finding 7tv emote")
+
+func findSevenTvEmote(targetEmoteName string, roomID string) ([]byte, bool, error) {
+	emotes, err := providers.GetSevenTvEmotes(roomID)
+	if err != nil {
+		return nil, false, errFindingSevenTvEmote
+	}
+
+	for _, emote := range emotes {
+		if emote.Name == targetEmoteName {
+			emoteBuffer, err := providers.GetSevenTvEmote(emote.ID)
+			if err != nil {
+				return nil, false, errFindingSevenTvEmote
+			}
+
+			return emoteBuffer, true, nil
+		}
+	}
+
+	return nil, false, nil
 }
 
 var errFindingBttvEmote = errors.New("error finding bttv emote")
@@ -104,8 +152,15 @@ func modifyEmote(emoteBuffer []byte) ([]byte, error) {
 
 	// 2x the speed
 	newPageDelays := make([]int, len(pageDelays))
-	for i, delay := range pageDelays {
-		newPageDelays[i] = delay / 4
+
+	for index, delay := range pageDelays {
+		// if the delay is 10 or lower, it actually slows it down
+		newDelay := delay / 4
+		if newDelay < 11 {
+			newDelay = 11
+		}
+
+		newPageDelays[index] = newDelay
 	}
 
 	err = image.SetPageDelay(newPageDelays)
