@@ -68,7 +68,7 @@ func ImproveEmote(message twitch.PrivateMessage) string {
 		return url
 	}
 
-	return "DONE"
+	return "Emote not found"
 }
 
 var errFindingSevenTvEmote = errors.New("error finding 7tv emote")
