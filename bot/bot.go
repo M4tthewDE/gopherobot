@@ -48,6 +48,12 @@ func (b *Bot) Run() {
 	b.pingClient.OnPongMessage(b.onPong)
 	b.pingClient.OnPingSent(b.onPingSent)
 
+	b.client.OnConnect(func() {
+		for _, channel := range b.channels {
+			b.client.Say(channel, "Restarted...")
+		}
+	})
+
 	b.client.Join(b.config.Bot.Channels...)
 	b.channels = append(b.channels, b.config.Bot.Channels...)
 
