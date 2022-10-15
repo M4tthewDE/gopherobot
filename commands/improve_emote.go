@@ -84,9 +84,6 @@ func findBttvEmote(targetEmoteCode string, roomID string) ([]byte, bool, error) 
 var errModifyingEmote = errors.New("failed to modify emote")
 
 func modifyEmote(emoteBuffer []byte) ([]byte, error) {
-	vips.Startup(nil)
-	defer vips.Shutdown()
-
 	importParams := vips.NewImportParams()
 	// needed to import all pages (frames)
 	importParams.NumPages.Set(-1)
