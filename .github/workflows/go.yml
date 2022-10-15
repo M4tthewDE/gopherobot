@@ -20,7 +20,7 @@ jobs:
         go-version: 1.19
 
     - name: Install vips
-      run: sudo apt-get -y install libvips-dev
+      run: sudo apt-get -y install libvips libvips-dev
 
     - name: Download Modules
       run: go get
