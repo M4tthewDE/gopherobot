@@ -40,6 +40,7 @@ type Config struct {
 		Channels []string `yaml:"channels,flow"`
 		Prefix   string   `yaml:"prefix"`
 		Profile  string   `yaml:"profile"`
+		Timeout  int      `yaml:"timeout"`
 	} `yaml:"bot"`
 	Twitch struct {
 		Token    string `yaml:"token"`

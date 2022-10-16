@@ -81,7 +81,7 @@ func (b *Bot) onPingSent() {
 }
 
 func (b *Bot) onMessage(message twitch.PrivateMessage) {
-	commandDeadline := time.Second * 10
+	commandDeadline := time.Duration(b.config.Bot.Timeout) * time.Millisecond
 	prefix := message.Message[0:1]
 
 	if prefix != b.config.Bot.Prefix || message.User.ID != "116672490" {
