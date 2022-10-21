@@ -84,7 +84,7 @@ func (b *Bot) onMessage(message twitch.PrivateMessage) {
 	commandDeadline := time.Duration(b.config.Bot.Timeout) * time.Millisecond
 	prefix := message.Message[0:1]
 
-	if prefix != b.config.Bot.Prefix || message.User.ID != "116672490" {
+	if prefix != b.config.Bot.Prefix || message.User.Name == b.config.Bot.Name {
 		return
 	}
 
@@ -94,16 +94,23 @@ func (b *Bot) onMessage(message twitch.PrivateMessage) {
 
 	result, err := b.doCommand(ctx, message)
 	if err != nil {
-		log.Println(err)
 
 		if errors.Is(err, context.DeadlineExceeded) {
 			b.sendMessage(message.Channel, "Command execution deadline exceeded")
-		} else {
-			b.sendMessage(message.Channel, "Error during command execution")
+			return
 		}
-	} else {
-		b.sendMessage(message.Channel, result)
+
+		if errors.Is(err, ErrCommandNotAllowed) {
+			return
+		}
+
+		log.Println(err)
+		b.sendMessage(message.Channel, "Error during command execution")
+
+		return
 	}
+
+	b.sendMessage(message.Channel, result)
 }
 
 func (b *Bot) sendMessage(channel string, message string) {
@@ -114,10 +121,16 @@ func (b *Bot) sendMessage(channel string, message string) {
 	}
 }
 
+var ErrCommandNotAllowed = errors.New("command not allowed")
+
 func (b *Bot) doCommand(ctx context.Context, message twitch.PrivateMessage) (string, error) {
 	identifier := strings.Split(message.Message, " ")[0][1:]
 	switch identifier {
 	case "echo":
+		if message.User.Name != b.config.Bot.Owner {
+			return "", ErrCommandNotAllowed
+		}
+
 		return commands.Echo(message), nil
 	case "ping":
 		return commands.Ping(b.startTime, b.latencyReader.latency, b.config), nil

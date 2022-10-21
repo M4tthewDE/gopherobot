@@ -41,6 +41,8 @@ type Config struct {
 		Prefix   string   `yaml:"prefix"`
 		Profile  string   `yaml:"profile"`
 		Timeout  int      `yaml:"timeout"`
+		Owner    string   `yaml:"owner"`
+		Name     string   `yaml:"name"`
 	} `yaml:"bot"`
 	Twitch struct {
 		Token    string `yaml:"token"`
