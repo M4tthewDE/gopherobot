@@ -80,11 +80,11 @@ func (b *Bot) onPingSent() {
 	b.lastPing = time.Now()
 }
 
-func (b *Bot) onMessage(message twitch.PrivateMessage) {
+func (b *Bot) onMessage(msg twitch.PrivateMessage) {
 	commandDeadline := time.Duration(b.config.Bot.Timeout) * time.Millisecond
-	prefix := message.Message[0:1]
+	prefix := msg.Message[0:1]
 
-	if prefix != b.config.Bot.Prefix || message.User.Name == b.config.Bot.Name {
+	if prefix != b.config.Bot.Prefix || msg.User.Name == b.config.Bot.Name {
 		return
 	}
 
@@ -92,10 +92,12 @@ func (b *Bot) onMessage(message twitch.PrivateMessage) {
 
 	defer cancel()
 
-	result, err := b.doCommand(ctx, message)
+	result, err := b.doCommand(ctx, msg)
 	if err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
-			b.sendMessage(message.Channel, "Command execution deadline exceeded")
+			response := b.buildResponse(msg, "Command execution deadline exceeded", true)
+
+			b.sendMessage(msg.Channel, response)
 
 			return
 		}
@@ -105,42 +107,57 @@ func (b *Bot) onMessage(message twitch.PrivateMessage) {
 		}
 
 		log.Println(err)
-		b.sendMessage(message.Channel, "Error during command execution")
+
+		response := b.buildResponse(msg, "Error during command execution", true)
+		b.sendMessage(msg.Channel, response)
 
 		return
 	}
 
-	b.sendMessage(message.Channel, result)
+	b.sendMessage(msg.Channel, result)
+}
+
+func (b *Bot) buildResponse(msg twitch.PrivateMessage, content string, doesPing bool) string {
+	if doesPing {
+		content = fmt.Sprintf("%s, %s", msg.User.Name, content)
+	}
+
+	if b.config.Bot.Profile != "PROD" {
+		content = fmt.Sprintf("[%s] %s", b.config.Bot.Profile, content)
+	}
+
+	return content
 }
 
 func (b *Bot) sendMessage(channel string, message string) {
-	if b.config.Bot.Profile == "PROD" {
-		b.client.Say(channel, message)
-	} else {
-		b.client.Say(channel, fmt.Sprintf("[%s] %s", b.config.Bot.Profile, message))
-	}
+	b.client.Say(channel, message)
 }
 
 var ErrCommandNotAllowed = errors.New("command not allowed")
 
-func (b *Bot) doCommand(ctx context.Context, message twitch.PrivateMessage) (string, error) {
-	identifier := strings.Split(message.Message, " ")[0][1:]
+// Commands decide how their return values look like.
+func (b *Bot) doCommand(ctx context.Context, msg twitch.PrivateMessage) (string, error) {
+	identifier := strings.Split(msg.Message, " ")[0][1:]
 	switch identifier {
 	case "echo":
-		if message.User.Name != b.config.Bot.Owner {
+		if msg.User.Name != b.config.Bot.Owner {
 			return "", ErrCommandNotAllowed
 		}
 
-		return commands.Echo(message), nil
+		response := commands.Echo(msg)
+
+		return b.buildResponse(msg, response, false), nil
 	case "ping":
-		return commands.Ping(b.startTime, b.latencyReader.latency, b.config), nil
+		response := commands.Ping(b.startTime, b.latencyReader.latency, b.config)
+
+		return b.buildResponse(msg, response, true), nil
 	case "improveemote":
-		result, err := commands.ImproveEmote(ctx, message)
+		response, err := commands.ImproveEmote(ctx, msg)
 		if err != nil {
 			return "", fmt.Errorf("improve emote error: %w", err)
 		}
 
-		return result, nil
+		return b.buildResponse(msg, response, true), nil
 	}
 
 	return "Command not found", nil
