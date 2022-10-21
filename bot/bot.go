@@ -94,9 +94,9 @@ func (b *Bot) onMessage(message twitch.PrivateMessage) {
 
 	result, err := b.doCommand(ctx, message)
 	if err != nil {
-
 		if errors.Is(err, context.DeadlineExceeded) {
 			b.sendMessage(message.Channel, "Command execution deadline exceeded")
+
 			return
 		}
 
