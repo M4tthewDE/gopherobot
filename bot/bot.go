@@ -21,6 +21,7 @@ type Bot struct {
 	channels      []string
 	lastPing      time.Time
 	startTime     time.Time
+	firstConnect  bool
 }
 
 func NewBot(config *config.Config) *Bot {
@@ -38,8 +39,8 @@ func NewBot(config *config.Config) *Bot {
 	bot.pingClient.IdlePingInterval = 1 * time.Second
 
 	bot.startTime = time.Now()
-
 	bot.latencyReader = NewLatencyReader()
+	bot.firstConnect = true
 
 	return &bot
 }
@@ -53,8 +54,12 @@ func (b *Bot) Run() {
 	b.pingClient.OnPingSent(b.onPingSent)
 
 	b.client.OnConnect(func() {
-		for _, channel := range b.channels {
-			b.sendMessage(channel, "Restarted...")
+		if b.firstConnect {
+			for _, channel := range b.channels {
+				b.sendMessage(channel, "Restarted...")
+			}
+
+			b.firstConnect = false
 		}
 	})
 
