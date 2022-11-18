@@ -163,6 +163,17 @@ func (b *Bot) doCommand(ctx context.Context, msg twitch.PrivateMessage) (string,
 		}
 
 		return b.buildResponse(msg, response, true), nil
+	case "restart":
+		if msg.User.Name != b.config.Bot.Owner {
+			return "", ErrCommandNotAllowed
+		}
+
+		response, err := commands.Restart(ctx)
+		if err != nil {
+			return "", fmt.Errorf("restart error: %w", err)
+		}
+
+		return b.buildResponse(msg, response, true), nil
 	}
 
 	return "Command not found", nil
