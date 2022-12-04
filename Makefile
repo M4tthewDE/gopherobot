@@ -21,7 +21,7 @@ docker:
 
 docker-run:
 	docker build --tag gopherobot .
-	docker container run -d --name gopherobot gopherobot
+	docker container run --name gopherobot gopherobot
 
 docker-clean:
 	docker container stop gopherobot
