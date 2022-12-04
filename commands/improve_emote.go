@@ -2,9 +2,10 @@ package commands
 
 import (
 	"context"
+	"crypto/rand"
 	"errors"
 	"fmt"
-	"math/rand"
+	"math/big"
 	"strings"
 
 	"de.com.fdm/gopherobot/providers"
@@ -142,21 +143,27 @@ func modifyEmote(emoteBuffer []byte) ([]byte, error) {
 	return modifiedBuffer, nil
 }
 
-// random page delay between 0 and 400
+// random page delay between 0 and 400.
 func applyRandomSpeed(image *vips.ImageRef) error {
 	pageDelays, err := image.PageDelay()
 	if err != nil {
 		return fmt.Errorf("get page delay error: %w", err)
 	}
 
-	randDelay := rand.Intn(400)
+	max := big.NewInt(400)
+
+	randomDelay, err := rand.Int(rand.Reader, max)
+	if err != nil {
+		return fmt.Errorf("number generator error: %w", err)
+	}
+
 	newPageDelays := make([]int, len(pageDelays))
 	for index := range pageDelays {
-		newPageDelays[index] = randDelay
+		newPageDelays[index] = int(randomDelay.Int64())
 	}
 
 	if image.SetPageDelay(newPageDelays) != nil {
-		return err
+		return fmt.Errorf("set page delay error: %w", err)
 	}
 
 	return nil
