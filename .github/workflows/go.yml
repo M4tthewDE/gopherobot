@@ -18,10 +18,7 @@ jobs:
 
     - name: Install vips
       run: |
-        sudo add-apt-repository -y ppa:strukturag/libde265
-        sudo add-apt-repository -y ppa:strukturag/libheif
-        sudo add-apt-repository ppa:tonimelisma/ppa
-        sudo apt-get -y install libvips-dev
+        sudo apt update && sudo apt -y install libvips-dev
 
     - name: Download Modules
       run: go get
