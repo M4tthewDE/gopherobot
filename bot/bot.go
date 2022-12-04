@@ -86,6 +86,7 @@ func (b *Bot) onPingSent() {
 }
 
 func (b *Bot) onMessage(msg twitch.PrivateMessage) {
+	log.Println(msg)
 	commandDeadline := time.Duration(b.config.Bot.Timeout) * time.Millisecond
 	prefix := msg.Message[0:1]
 
