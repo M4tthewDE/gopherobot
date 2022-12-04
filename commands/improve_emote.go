@@ -2,10 +2,9 @@ package commands
 
 import (
 	"context"
-	"crypto/rand"
 	"errors"
 	"fmt"
-	"math/big"
+	"math/rand"
 	"strings"
 
 	"de.com.fdm/gopherobot/providers"
@@ -135,6 +134,10 @@ func modifyEmote(emoteBuffer []byte) ([]byte, error) {
 		return nil, fmt.Errorf("change speed error: %w", err)
 	}
 
+	if randomResizing(image) != nil {
+		return nil, fmt.Errorf("resizing error: %w", err)
+	}
+
 	modifiedBuffer, _, err := image.ExportNative()
 	if err != nil {
 		return nil, fmt.Errorf("export error: %w", err)
@@ -143,27 +146,38 @@ func modifyEmote(emoteBuffer []byte) ([]byte, error) {
 	return modifiedBuffer, nil
 }
 
-// random page delay between 0 and 400.
+// random page delay between 0 and 100.
 func applyRandomSpeed(image *vips.ImageRef) error {
 	pageDelays, err := image.PageDelay()
 	if err != nil {
 		return fmt.Errorf("get page delay error: %w", err)
 	}
 
-	max := big.NewInt(400)
-
-	randomDelay, err := rand.Int(rand.Reader, max)
-	if err != nil {
-		return fmt.Errorf("number generator error: %w", err)
-	}
+	/* #nosec */
+	randomDelay := rand.Intn(101)
 
 	newPageDelays := make([]int, len(pageDelays))
 	for index := range pageDelays {
-		newPageDelays[index] = int(randomDelay.Int64())
+		newPageDelays[index] = randomDelay
 	}
 
 	if image.SetPageDelay(newPageDelays) != nil {
 		return fmt.Errorf("set page delay error: %w", err)
+	}
+
+	return nil
+}
+
+func randomResizing(image *vips.ImageRef) error {
+	min := 0.25
+	max := 2.0
+
+	/* #nosec */
+	randomHScale := min + rand.Float64()*(max-min)
+
+	err := image.ResizeWithVScale(randomHScale, 1, vips.KernelAuto)
+	if err != nil {
+		return fmt.Errorf("resize error: %w", err)
 	}
 
 	return nil
