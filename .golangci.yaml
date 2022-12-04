@@ -23,3 +23,6 @@ linters:
     - structcheck
     - sqlclosecheck
     - wastedassign
+    - varcheck
+    - nosnakecase
+    - deadcode
