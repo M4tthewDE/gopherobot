@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/rand"
 	"strings"
 
 	"de.com.fdm/gopherobot/providers"
@@ -120,6 +121,7 @@ func findBttvEmote(ctx context.Context, targetEmoteCode string, roomID string) (
 
 func modifyEmote(emoteBuffer []byte) ([]byte, error) {
 	importParams := vips.NewImportParams()
+
 	// needed to import all pages (frames)
 	importParams.NumPages.Set(-1)
 
@@ -128,33 +130,12 @@ func modifyEmote(emoteBuffer []byte) ([]byte, error) {
 		return nil, fmt.Errorf("load image error: %w", err)
 	}
 
-	pageDelays, err := image.PageDelay()
-	if err != nil {
-		return nil, fmt.Errorf("get page delay error: %w", err)
+	if applyRandomSpeed(image) != nil {
+		return nil, fmt.Errorf("change speed error: %w", err)
 	}
 
-	// 2x the speed
-	newPageDelays := make([]int, len(pageDelays))
-
-	for index, delay := range pageDelays {
-		// if the delay is 10 or lower, it actually slows it down
-		newDelay := delay / 4
-		if newDelay < 11 {
-			newDelay = 11
-		}
-
-		newPageDelays[index] = newDelay
-	}
-
-	err = image.SetPageDelay(newPageDelays)
-	if err != nil {
-		return nil, fmt.Errorf("set page delay error: %w", err)
-	}
-
-	// widen emote
-	err = image.ResizeWithVScale(2, 1, vips.KernelLanczos3)
-	if err != nil {
-		return nil, fmt.Errorf("resize error: %w", err)
+	if randomResizing(image) != nil {
+		return nil, fmt.Errorf("resizing error: %w", err)
 	}
 
 	modifiedBuffer, _, err := image.ExportNative()
@@ -163,6 +144,43 @@ func modifyEmote(emoteBuffer []byte) ([]byte, error) {
 	}
 
 	return modifiedBuffer, nil
+}
+
+// random page delay between 0 and 100.
+func applyRandomSpeed(image *vips.ImageRef) error {
+	pageDelays, err := image.PageDelay()
+	if err != nil {
+		return fmt.Errorf("get page delay error: %w", err)
+	}
+
+	/* #nosec */
+	randomDelay := rand.Intn(101)
+
+	newPageDelays := make([]int, len(pageDelays))
+	for index := range pageDelays {
+		newPageDelays[index] = randomDelay
+	}
+
+	if image.SetPageDelay(newPageDelays) != nil {
+		return fmt.Errorf("set page delay error: %w", err)
+	}
+
+	return nil
+}
+
+func randomResizing(image *vips.ImageRef) error {
+	min := 0.25
+	max := 2.0
+
+	/* #nosec */
+	randomHScale := min + rand.Float64()*(max-min)
+
+	err := image.ResizeWithVScale(randomHScale, 1, vips.KernelAuto)
+	if err != nil {
+		return fmt.Errorf("resize error: %w", err)
+	}
+
+	return nil
 }
 
 var ErrNoEmoteProvided = errors.New("no emote provided")
